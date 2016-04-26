@@ -1,0 +1,25 @@
+useDynLib(flexrsurv)
+
+export("flexrsurv",
+       "flexrsurv.ll",
+	   "print.flexrsurv",
+       "summary.flexrsurv",
+       "print.summary.flexrsurv",
+       "NLL",
+       "NPH",
+       "NPHNLL",
+	   "NPHalpha", 
+	   "NLLbeta"
+       )
+S3method(print, flexrsurv)
+S3method(summary, flexrsurv)
+S3method(print, summary.flexrsurv)
+
+importFrom("utils", "packageVersion")
+import(methods)
+import(splines)
+import(survival)
+import(stats)
+importFrom(orthogonalsplinebasis, SplineBasis, evaluate )
+import(matrixcalc)
+import(Epi)
