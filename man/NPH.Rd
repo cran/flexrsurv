@@ -15,7 +15,7 @@ NPH(x,
     Knots.t = NULL, 
     Degree.t = 3, 
     Intercept.t = TRUE, 
-    Boundary.knots.t = range(timevar), 
+    Boundary.knots.t = c(0, max(timevar)), 
     Keep.duplicates.t = TRUE, 
     outer.ok = TRUE, 
     ...)
@@ -46,7 +46,7 @@ degree of splines which are considered.
 a logical value indicating whether intercept/first basis of spline should be considered.
 }
   \item{Boundary.knots.t}{
-range of time period which is analysed. By default it is the range of time variable.
+range of time period which is analysed. By default it is \code{c(0, max(timevar))}.
 }
   \item{Keep.duplicates.t}{
 Should duplicate interior knots be kept or removed. Defaults is \code{FALSE}, which removes duplicate knots with a warning if duplicate interior knots are found.

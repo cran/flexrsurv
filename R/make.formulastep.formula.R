@@ -29,7 +29,7 @@ make.formulastepNLL.formula <- function(formula, data,
       # add arg BETAt = "betaT"x" in NPHNLL() call
   # force intercept.t = FALSE
   if(length(NamesNPHNLLVars) >0){
-    for (i in attr(Terms, "specials")["NPHNLL"]){
+    for (i in attr(Terms, "specials")[["NPHNLL"]]){
       for (k in 1:length(i)){
         thecall <-  match.call(NPHNLL, attr(Terms,"variables")[[i[k]+1]])
         namebetaTx <- paste("betaT", thecall[["x"]], sep="")
@@ -95,7 +95,7 @@ make.formulastepNPH.formula <- function(formula, data,
       # change change arg x to alpha"x" in NPHNLL() call
   # force intercept.t = FALSE
   if(length(NamesNPHNLLVars) >0){
-    for (i in attr(Terms, "specials")["NPHNLL"]){
+    for (i in attr(Terms, "specials")[["NPHNLL"]]){
       for (k in 1:length(i)){
         thecall <-  match.call(NPHNLL, attr(Terms,"variables")[[i[k]+1]])
         namealphax <- paste("alpha", thecall[["x"]], sep="")
@@ -154,7 +154,7 @@ NPHNLL2NLL.formula <- function(formula, data,
       # add arg BETAt = "betaT"x" in NPHNLL() call
   # force intercept.t = FALSE
   if(length(NamesNPHNLLVars) >0){
-    for (i in attr(Terms, "specials")["NPHNLL"]){
+    for (i in attr(Terms, "specials")[["NPHNLL"]]){
       thecall <-  match.call(NPHNLL, attr(Terms,"variables")[[i+1]])
       modified <- modified + 1
       thecall[[1]] <- as.name("NLL")
@@ -219,7 +219,7 @@ NPHNLL2NPHalpha.formula <- function(formula, data,
       # change change arg x to alpha"x" in NPHNLL() call
   # force intercept.t = FALSE
   if(length(NamesNPHNLLVars) >0){
-    for (i in attr(Terms, "specials")["NPHNLL"]){
+    for (i in attr(Terms, "specials")[["NPHNLL"]]){
       thecall <-  match.call(NPHNLL, attr(Terms,"variables")[[i+1]])
       modified <- modified + 1
       thecall[[1]] <- as.name("NPHalpha")

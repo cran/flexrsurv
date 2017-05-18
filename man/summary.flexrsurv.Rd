@@ -77,9 +77,9 @@ data(rdata, package="relsurv")
 # rate table from package relsurv
 data(slopop, package="relsurv")
 
-# get the death rate from slopop for rdata
-rdata$iage <- findInterval(rdata$age*365.24, attr(slopop, "cutpoints")[[1]])
-rdata$iyear <- findInterval(rdata$year, attr(slopop, "cutpoints")[[2]])
+# get the death rate at event (or end of followup) from slopop for rdata
+rdata$iage <- findInterval(rdata$age*365.24+rdata$time, attr(slopop, "cutpoints")[[1]])
+rdata$iyear <- findInterval(rdata$year+rdata$time, attr(slopop, "cutpoints")[[2]])
 therate <- rep(-1, dim(rdata)[1])
 for( i in 1:dim(rdata)[1]){
   therate[i] <- slopop[rdata$iage[i], rdata$iyear[i], rdata$sex[i]]
@@ -99,7 +99,7 @@ fit <- flexrsurv(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3),
                  degree.Bh=3,
                  Spline = "b-spline",
                  initbyglm=TRUE, 
-                 initbands=seq(from=0, to=5400, by=200)
+                 initbands=seq(from=0, to=5400, by=200),
                  int_meth= "CAV_SIM",
                  step=50
                  )

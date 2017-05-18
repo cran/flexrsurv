@@ -21,9 +21,10 @@ make.formulastepNLL.terms <- function(terms, data,
       # add arg BETAt = "betaT"x" in NPHNLL() call
   # force intercept.t = FALSE
   if(length(NamesNPHNLLVars) >0){
-    for (i in attr(terms, "specials")["NPHNLL"]){
+    for (i in attr(terms, "specials")[["NPHNLL"]]){
 #      for (k in 1:length(i)){
-        thecall <-  match.call(NPHNLL, attr(terms,"variables")[[i+1]])
+        thecall0 <-  attr(terms,"variables")[[i+1]]
+        thecall <-  match.call(NPHNLL, thecall0)
         namebetaTx <- paste("betaT", thecall[["x"]], sep="")
         modified <- modified + 1
         thecall[[1]] <- as.name("NLLbeta")
@@ -78,8 +79,9 @@ make.formulastepNPH.terms <- function(terms, data,
       # change change arg x to alpha"x" in NPHNLL() call
   # force intercept.t = FALSE
   if(length(NamesNPHNLLVars) >0){
-    for (i in attr(terms, "specials")["NPHNLL"]){
-        thecall <-  match.call(NPHNLL, attr(terms,"variables")[[i+1]])
+    for (i in attr(terms, "specials")[["NPHNLL"]]){
+        thecall0 <-  attr(terms,"variables")[[i+1]]
+        thecall <-  match.call(NPHNLL, thecall0)
         namealphax <- paste("alpha", thecall[["x"]], sep="")
         modified <- modified + 1
         thecall[[1]] <- as.name("NPH")

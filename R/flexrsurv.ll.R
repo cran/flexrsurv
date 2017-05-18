@@ -321,6 +321,7 @@ listinit<- list(gamma0 = init[des$coef2param$gamma0],
     }
   objfit$des <- des
   objfit$terms <- Terms
+objfit$mt <- mt
 # don't know if it is necessary?
 #  attr(objfit$terms, ".Environment") <- parent.frame()
   objfit$assign <- des$assign

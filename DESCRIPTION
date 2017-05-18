@@ -1,8 +1,8 @@
 Package: flexrsurv
 Type: Package
-Title: Flexible Relative Survival
-Version: 1.3.3
-Date: 2016-04-22
+Title: Flexible Relative Survival Analysis
+Version: 1.4.1
+Date: 2017-05-12
 Authors@R: c(
     person("Isabelle", "Clerc-Urmès", role="aut"), 
     person("Michel", "Grzebyk", role = c("aut", "cre"), email = "michel.grzebyk@inrs.fr"),
@@ -11,17 +11,18 @@ Authors@R: c(
 	)
 Author: Isabelle Clerc-Urmès [aut], Michel Grzebyk [aut, cre], Guy Hédelin [ctb], CENSUR working survival group [ctb]
 Maintainer: Michel Grzebyk <michel.grzebyk@inrs.fr>
-Description: Perform relative survival analyses using approaches described in 
-	     Remontet et al. (2007) <DOI:10.1002/sim.2656> and 
-	     Mahboubi et al. (2011) <DOI:10.1002/sim.4208>.
-	     It implements non-linear, non-proportional effects and both non proportional and non linear effects 
-	     using splines (B-spline and truncated power basis). 
+Description: Package for parametric relative survival analyses. It allows to model non-linear and 
+        non-proportional effects using splines (B-spline and truncated power basis). It also includes 
+        both non proportional and non linear effects of 
+			Remontet, L. et al. (2007) <DOI:10.1002/sim.2656> and 
+			Mahboubi, A. et al. (2011) <DOI:10.1002/sim.4208>. 
 License: GPL (>= 2.0)
-Depends: methods, splines, survival, stats, matrixcalc, Epi
-Suggests: relsurv
+Depends: methods, splines, survival, stats, matrixcalc, Epi,
+        formula.tools
+Suggests: relsurv, ggplot2
 Imports: utils, orthogonalsplinebasis
 Encoding: latin1
 NeedsCompilation: yes
-Packaged: 2016-04-25 16:11:06 UTC; michel.grzebyk
+Packaged: 2017-05-18 07:49:26 UTC; michel.grzebyk
 Repository: CRAN
-Date/Publication: 2016-04-26 19:32:05
+Date/Publication: 2017-05-18 08:32:47 UTC

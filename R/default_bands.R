@@ -44,6 +44,3 @@ setMethod("default_bands",
           signature("TPSplineBasis","numeric"),
           function(object, length.out) default_bands_TPS(object=object, length.out=length.out))
 
-
-
-

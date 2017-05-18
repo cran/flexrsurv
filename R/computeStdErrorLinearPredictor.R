@@ -1,18 +1,21 @@
 .computeStdErrorLinearPredictor_GA0B0AB<-function(GA0B0AB,
                                                   var,
                                                   Y, X0, X, Z, 
-                      nT0basis,
-                      Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
-                      ialpha0, nX0,
-                      ibeta0, nX,
-                      ialpha, ibeta,
+                                                  nT0basis,
+                                                  Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                                                  ialpha0, nX0,
+                                                  ibeta0, nX,
+                                                  ialpha, ibeta,
                                                   nTbasis,
-                      Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                                                  Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                                                   listZSplineBasis,
-                      Intercept_t_NPH=rep(TRUE, nX), 
-                      debug=FALSE,  ...){
-  # compute std error of a linearpredictor (log rate) if the model
-  # rate = f(t)%*%gamma + X0%*%alpha0 + X%*%beta0(t) + sum( alphai(zi)betai(t) ))
+                                                  Intercept_t_NPH=rep(TRUE, nX), 
+                                                  bhlink=c("log", "identity"),
+                                                 debug=FALSE,  ...){
+  # compute jacobian matrix of the excess hazard of the relative survival model
+  # rate = invlink(f(t)%*%gamma) exp(X0%*%alpha0 + X%*%beta0(t) + sum( alphai(zi)betai(t) ))
+  # if bhlink = log : return the gradient of f(t)%*%gamma + X0%*%alpha0 + X%*%beta0(t) + sum( alphai(zi)betai(t) )
+  # if bhlink = identity : return the jacobian of the function F( GA0B0AB) = c(baseline = f(t)%*%gamma, linpred = X0%*%alpha0 + X%*%beta0(t) + sum( alphai(zi)betai(t) )
   #################################################################################################################
   #################################################################################################################
   #  the coef of the first t-basis is constraint to 1 for nat-spline, and n-sum(other beta) if bs using expand() method
@@ -27,7 +30,9 @@
                                         # beta= expand(matrix(GA0B0AB[ibeta], ncol=Z@nZ, nrow=nTbasis-1))
                                         # beta does not contains coef for the first t-basis
   #################################################################################################################
-  # Y : object of class Surv
+  # Y : object of class Surv (with ncol=2 or more)
+  #                the time at which the predictors are computed is Y[,1] if ncol=2, Y[,2] if ncol>2
+  #
   # X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
   # X : log lineair but time dependante variable 
   # Z : object of class "DesignMatrixNPHNLL" time dependent variables (spline basis expended)
@@ -43,89 +48,45 @@
   # the function do not check the concorcance between length of parameter vectors and the number of knots and the Z.signature
   # returned value : the log liikelihood of the model
   
-if ( debug) cat("  # computinfg stderr of the linear predictor: .computeStdErrorLlinearPredictor\n")
+if ( debug) cat("  # computinf stderr of the linear predictor: .computeStdErrorLlinearPredictor\n")
 
-nbeta0 <- length(ibeta0)
-nalpha0 <- length(ialpha0)
+bhlink  <- match.arg(bhlink)       # type baseline hazard
 
-  # spline bases for baseline hazard
-colEndTime <- ifelse(ncol(Y)==2, 1, 2)
-YT0 <- evaluate(Spline_t0, Y[,colEndTime], intercept=Intercept_t0)
 
-DesignMatrix <- cbind(YT0,
-                      X0)
-
-  # spline bases for each TD effect
-    if(nX){
-      # spline bases for each TD effect
-      YT <- evaluate(Spline_t, Y[,colEndTime], intercept=TRUE)
-      if(Intercept_t_NPH[1]){
-        cbindDiagT <- YT
-      }
-      else {
-        cbindDiagT <- YT[, -1]
-      }
-      
-      cbindDiagX <- as.matrix(rep(1, nTbasis +  Intercept_t_NPH[1] -1 ))
-      if( nX > 1 ){
-        for( i in 2:nX){
-          if(Intercept_t_NPH[i]){
-            cbindDiagT <- cbind(cbindDiagT, YT)
-          }
-          else {
-            cbindDiagT <- cbind(cbindDiagT, YT[, -1])
-          }
-          cbindDiagX <- cbindDiagX %s% as.matrix(rep(1, nTbasis + Intercept_t_NPH[i] -1))
-        }
-      }
-      # remove first basis if
-      
-      DesignMatrix <- cbind(DesignMatrix,
-                            (X %*%  t(cbindDiagX)) * cbindDiagT)
-    }
-    
-if(is.null(Z)){
-  nZ <- 0
-  return(sqrt(diag(DesignMatrix %*% var %*% t(DesignMatrix))))
+gr <- gr_link_flexrsurv_GA0B0AB(GA0B0AB=GA0B0AB,
+                                       Y=Y, X0=X0, X=X, Z=Z, 
+                                       nT0basis=nT0basis,
+                                       Spline_t0=Spline_t0,
+                                       Intercept_t0=Intercept_t0,
+                                       ialpha0=ialpha0, nX0=nX0,
+                                       ibeta0=ibeta0, nX=nX,
+                                       ialpha=ialpha, ibeta=ibeta,                             
+                                       nTbasis=nTbasis,
+                                       Spline_t=Spline_t,
+                                       Intercept_t_NPH=Intercept_t_NPH,
+                                       debug=debug)
+if(bhlink == "log"){
+  varerr <- apply(gr * tcrossprod(gr, var), 1, sum)
+  stderr <- sqrt(varerr)
 } else {
-    #number of linear coef
-      # spline bases for each TD effect
-  YT <- evaluate(Spline_t, Y[,colEndTime], intercept=TRUE)
-  nlincoef <- nT0basis + nalpha0 + nbeta0
-  nZ <- Z@nZ
-  alpha <- GA0B0AB[ialpha]
-  beta <- GA0B0AB[ibeta]
-  dGdBeta <- diag(nlincoef)
-  for(i in 1:nZ){
-    thenalpha <- getNBases(listZSplineBasis[[i]])-1
-    cbindDiag1 <- duplicMat(diag(thenalpha), nTbasis)
-    cbindDiag2 <- duplicMat(diag(nTbasis), thenalpha)
-    thealpha <- alpha[Z@index[i,1]:Z@index[i,2]]
-    thebeta <- beta[(i-1)*(nTbasis-1)+1:(nTbasis-1)]
-    BdiagA <- duplicSumDirect(c(1, thebeta), thenalpha)
-    BdiagB <- StackDiag( thealpha, nTbasis)[,-1]
-    if(i == 1){
-      GA <- BdiagA
-      GB <- BdiagB
-    }
-    else {
-      GA <- GA %s% BdiagA
-      GA <- GB %s% BdiagB
-    }
-    DesignMatrix <- cbind(DesignMatrix,
-                           ((Z@DM)[,Z@index[i,1]:Z@index[i,2]] %*% cbindDiag1) * (YT %*% cbindDiag2)
-                           )
-     dGdBeta <- dGdBeta %s% cbind(GA , GB)
+  # varerr is a nobs X 3 matrix with for each obs,
+  #         var(bh(obs), linpred(obs) ) =  varerr[,1], varerr[,2]
+  #                                        varerr[,2], varerr[,3]
+  ngamma0 <- getNBases(Spline_t0)-(1-Intercept_t0)
+  ibh <-1:ngamma0
+  ilinpred <- (ngamma0+1):length(GA0B0AB)
+  varerr <- apply(gr[,ibh] * tcrossprod(gr[,ibh], var), 1, sum)
+  varerr <- cbind(varerr, apply(gr[,ibh] * tcrossprod(gr[,ilinpred], var), 1, sum))
+  varerr <- cbind(varerr, apply(gr[,ilinpred] * tcrossprod(gr[,ilinpred], var), 1, sum))
 
-    
-  }
-
-  
-    DesignMatrix <- DesignMatrix %*% dGdBeta
-
-    return(sqrt(diag(DesignMatrix %*% var %*% t(DesignMatrix))))
-    
-  }
-
+  stderr <- sqrt(varerr[,c(1,3)])
 }
+
+    attr(stderr, "varerr") <- varerr
+
+return(stderr)
+}
+
+
+
 

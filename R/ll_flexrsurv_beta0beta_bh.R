@@ -46,13 +46,25 @@ ll_flexrsurv_beta0beta_bh<-function(beta0beta, alpha, gamma0, alpha0,
   
   if(is.null(Z)){
     nZ <- 0
-  }
-  else
+  } else
     {
     nZ <- Z@nZ
-    }
+  }
 
   
+  if(Intercept_t0){
+    tmpgamma0 <- gamma0
+  }
+  else {
+    tmpgamma0 <- c(0, gamma0)
+  }
+
+  # baseline hazard at the end of the interval
+  
+YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
+
+
+
   # contribution of non time dependant variables
   if(nX0) PHterm <-exp(X0 %*% alpha0)
   else PHterm <- 1
@@ -85,16 +97,19 @@ ll_flexrsurv_beta0beta_bh<-function(beta0beta, alpha, gamma0, alpha0,
 
   if( nX+nZ ){
     NPHterm <- intTD(rateTD_bh_alphabeta, Y[,1], fail=Y[,2],
-                     step, Nstep, intweightsfunc=intweightsfunc, 
+                     step, Nstep,
+                     intweightsfunc=intweightsfunc, 
                      gamma0=gamma0, Zalphabeta=Zalphabeta, 
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
   }
   else {
-    NPHterm <- intTD(rateTD_bh, Y[,1], fail=Y[,2],
-                     step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
-                     gamma0=gamma0,
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0)
+#    NPHterm <- intTD(rateTD_gamma0_bh, Y[,1], fail=Y[,2],
+#                     step=step, Nstep=Nstep,
+#                     intweightsfunc=intweightsfunc, 
+#                     gamma0=gamma0,
+#                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
+   NPHterm <- predict(integrate(Spline_t0*tmpgamma0), Y[,1], intercep=Intercept_t0)
   }
   # spline bases for baseline hazard
   YT0 <- evaluate(Spline_t0, Y[,1], intercept=Intercept_t0)
@@ -103,12 +118,12 @@ ll_flexrsurv_beta0beta_bh<-function(beta0beta, alpha, gamma0, alpha0,
       # spline bases for each TD effect
       YT <- evaluate(Spline_t, Y[,1], intercept=TRUE)
       eventterm <- ifelse(Y[,2] ,
-                          log( PHterm * (YT0 %*% gamma0) * exp( apply(YT * Zalphabeta, 1, sum)) + expected_rate ), 
+                          log( PHterm * (YT0Gamma0) * exp( apply(YT * Zalphabeta, 1, sum)) + expected_rate ), 
                           0)
     } 
     else {
       eventterm <- ifelse(Y[,2] , 
-                          log( PHterm * (YT0 %*% gamma0) + expected_rate ), 
+                          log( PHterm * (YT0Gamma0) + expected_rate ), 
                           0)
     }
   } 
@@ -117,11 +132,11 @@ ll_flexrsurv_beta0beta_bh<-function(beta0beta, alpha, gamma0, alpha0,
       # spline bases for each TD effect
       YT <- evaluate(Spline_t, Y[,1], intercept=TRUE)
       eventterm <- ifelse(Y[,2] ,
-                          log( (YT0 %*% gamma0) * exp(apply(YT * Zalphabeta, 1, sum)) + expected_rate ), 
+                          log( (YT0Gamma0) * exp(apply(YT * Zalphabeta, 1, sum)) + expected_rate ), 
                           0)
     } else {
       eventterm <- ifelse(Y[,2] , 
-                          log( (YT0 %*% gamma0) + expected_rate ), 
+                          log( (YT0Gamma0) + expected_rate ), 
                           0)
     }
   }

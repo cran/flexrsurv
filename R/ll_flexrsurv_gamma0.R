@@ -42,10 +42,20 @@ ll_flexrsurv_gamma0<-function(gamma0, alpha0, beta0, alpha, beta, Y, X0, X, Z,
   
   if(is.null(Z)){
     nZ <- 0L
+  } else {
+    nZ <- Z@nZ
+  }
+
+  if(Intercept_t0){
+    tmpgamma0 <- gamma0
   }
   else {
-    nZ <- Z@nZ
-    }
+    tmpgamma0 <- c(0, gamma0)
+  }
+
+  # baseline hazard at the end of the interval
+  
+YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
 
   # contribution of non time dependant variables
 
@@ -83,17 +93,19 @@ ll_flexrsurv_gamma0<-function(gamma0, alpha0, beta0, alpha, beta, Y, X0, X, Z,
   
   if(nX + nZ) {
     NPHterm <- intTD(func=rateTD_gamma0alphabeta, T=Y[,1], fail=Y[,2],
-                     step=step, Nstep=Nstep,  intweightsfunc=intweightsfunc, 
+                     step=step, Nstep=Nstep,
+                     intweightsfunc=intweightsfunc, 
                      gamma0=gamma0, Zalphabeta=Zalphabeta, 
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE,
                      debug=debug)
   }
   else {
     NPHterm <- intTD(func=rateTD_gamma0, Y[,1], fail=Y[,2],
-                     step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
+                     step=step, Nstep=Nstep,
+                     intweightsfunc=intweightsfunc, 
                      gamma0=gamma0,
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      debug=debug)
   }
 # spline bases for baseline hazard
@@ -104,12 +116,12 @@ ll_flexrsurv_gamma0<-function(gamma0, alpha0, beta0, alpha, beta, Y, X0, X, Z,
       # spline bases for each TD effect
       YT <- evaluate(Spline_t, Y[,1], intercept=TRUE)
       eventterm <- ifelse(Y[,2] ,
-                          log( PHterm * exp(YT0 %*% gamma0 + apply(YT * Zalphabeta, 1, sum)) + expected_rate ), 
+                          log( PHterm * exp(YT0Gamma0 + apply(YT * Zalphabeta, 1, sum)) + expected_rate ), 
                           0)
     } 
     else { 
       eventterm <- ifelse(Y[,2] , 
-                          log( PHterm * exp(YT0 %*% gamma0) + expected_rate ), 
+                          log( PHterm * exp(YT0Gamma0) + expected_rate ), 
                           0)
     }
   } 

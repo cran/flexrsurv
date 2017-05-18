@@ -19,7 +19,7 @@ NPHNLL(x,
        Knots.t = NULL, 
        Degree.t = 3,
        Intercept.t = (model == "multiplicative"), 
-       Boundary.knots.t = range(timevar), 
+       Boundary.knots.t = c(0, max(timevar)), 
        outer.ok = TRUE, 
        Keep.duplicates = TRUE, 
        xdimnames = ":XxXxXXxXxX ", 
@@ -87,7 +87,7 @@ range of time period which is analysed.
 }
 
 \references{
-    Mahboubi, A., M. Abrahamowicz, et al. (2011). "Flexible modeling of the effects of continuous prognostic factors in relative survival." Stat Med 30(12): 1351-1365. \doi{DOI:10.1002/sim.4208}
+    Mahboubi, A., M. Abrahamowicz, et al. (2011). "Flexible modeling of the effects of continuous prognostic factors in relative survival." Stat Med 30(12): 1351-1365. \doi{10.1002/sim.4208}
 
     Remontet, L., N. Bossard, et al. (2007). "An overall strategy based on regression models to estimate relative survival and model the effects of prognostic factors in cancer survival studies." Stat Med 26(10): 2214-2228. \doi{10.1002/sim.2656}
 

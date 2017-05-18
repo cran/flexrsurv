@@ -72,14 +72,14 @@ nlbeta <-function(y, x,
 # Time dependent effect
 
 td <-function(x,timevar,
-               Spline=c("b-spline","tp-spline"), 
-               Knots.t=NULL, 
-               Degree.t=3, 
-               Intercept.t=TRUE, 
-               Boundary.knots.t = range(timevar), 
-               Keep.duplicates.t = TRUE,
-               outer.ok=TRUE,
-               ...){
+              Spline=c("b-spline","tp-spline"), 
+              Knots.t=NULL, 
+              Degree.t=3, 
+              Intercept.t=TRUE, 
+              Boundary.knots.t = c(0, max(timevar)), 
+              Keep.duplicates.t = TRUE,
+              outer.ok=TRUE,
+              ...){
     
   Spline <- match.arg(Spline)
   if (Spline=="b-spline") {
@@ -119,7 +119,7 @@ tdalpha <-function(x,timevar,
                    Knots.t=NULL, 
                    Degree.t=3, 
                    Intercept.t=TRUE, 
-                   Boundary.knots.t = range(timevar),
+                   Boundary.knots.t = c(0, max(timevar)), 
                    Keep.duplicates.t = TRUE,
                    outer.ok=TRUE,
                    ...){
@@ -167,7 +167,7 @@ nltd <- function(x,timevar,
                    Boundary.knots = range(x), 
                    Knots.t=NULL, Degree.t=3,
                    Intercept.t=(model=="multiplicative"), 
-                   Boundary.knots.t = range(timevar),
+                   Boundary.knots.t = c(0, max(timevar)), 
                    outer.ok=TRUE,
                    Keep.duplicates = TRUE,
                    xdimnames=":XxXxXXxXxX ",

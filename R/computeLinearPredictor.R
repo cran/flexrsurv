@@ -1,15 +1,17 @@
-.computeLinearPredictor_GA0B0AB<-function(GA0B0AB, Y, X0, X, Z, 
-                      nT0basis,
-                      Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
-                      ialpha0, nX0,
-                      ibeta0, nX,
-                      ialpha, ibeta,                             
-                      nTbasis,
-                      Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
-                      Intercept_t_NPH=rep(TRUE, nX), 
-                      debug=FALSE,  ...){
+.computeLinearPredictor_GA0B0AB<-function(GA0B0AB,
+                                          Y, X0, X, Z, 
+                                          nT0basis,
+                                          Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                                          ialpha0, nX0,
+                                          ibeta0, nX,
+                                          ialpha, ibeta,                             
+                                          nTbasis,
+                                          Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                                          Intercept_t_NPH=rep(TRUE, nX),
+                                          bhlink=c("log", "identity"),
+                                          debug=FALSE,  ...){
   # compute linearpredictor (log rate) if the model
-  # rate = f(t)%*%gamma + X0%*%alpha0 + X%*%beta0(t) + sum( alphai(zi)betai(t) ))
+  # rate = invlink(f(t)%*%gamma) exp(X0%*%alpha0 + X%*%beta0(t) + sum( alphai(zi)betai(t) ))
   #################################################################################################################
   #################################################################################################################
   #  the coef of the first t-basis is constraint to 1 for nat-spline, and n-sum(other beta) if bs using expand() method
@@ -24,7 +26,7 @@
                                         # beta= expand(matrix(GA0B0AB[ibeta], ncol=Z@nZ, nrow=nTbasis-1))
                                         # beta does not contains coef for the first t-basis
   #################################################################################################################
-  # Y : object of class Surv
+  # Y : object of class Surv (with ncol=2 or 3) Y[,ncol-1] is the time at which the predictors are computed
   # X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
   # X : log lineair but time dependante variable 
   # Z : object of class "DesignMatrixNPHNLL" time dependent variables (spline basis expended)
@@ -39,7 +41,9 @@
   #  ... not used args
   # the function do not check the concorcance between length of parameter vectors and the number of knots and the Z.signature
   # returned value : the log liikelihood of the model
-  
+
+  bhlink  <- match.arg(bhlink)       # type baseline hazard
+
   if(is.null(Z)){
     nZ <- 0
   } else {
@@ -82,20 +86,26 @@
   
   # spline bases for baseline hazard
   colEndTime <- ifelse(ncol(Y)==2, 1, 2)
-    YT0 <- evaluate(Spline_t0, Y[,colEndTime], intercept=Intercept_t0)
+  YT0 <- evaluate(Spline_t0, Y[,colEndTime], intercept=Intercept_t0)
     
-  # spline bases for each TD effect
-    if(nX + nZ){
-      # spline bases for each TD effect
-      YT <- evaluate(Spline_t, Y[,colEndTime], intercept=TRUE)
-      linpred <- YT0 %*% GA0B0AB[1:nT0basis] + PHterm + apply(YT * Zalphabeta, 1, sum)
-    } else {
-      linpred <- YT0 %*% GA0B0AB[1:nT0basis] + PHterm 
-    }
 
+  if(nX + nZ){
+      # spline bases for each TD effect
+    YT <- evaluate(Spline_t, Y[,colEndTime], intercept=TRUE)
+    linpred <- PHterm + apply(YT * Zalphabeta, 1, sum)
+    } else {
+      linpred <- PHterm 
+    }
+  if(bhlink == "log"){
+    linpred <- linpred + YT0 %*% GA0B0AB[1:nT0basis] 
+  } else {
+    linpred <- cbind(linpred ,  YT0 %*% GA0B0AB[1:nT0basis])
+    dimnames(linpred)[[2]] <- c("linpred", "logbaseline")
+  }
 
 linpred
 }
+
 
 
 

@@ -56,22 +56,18 @@ if ( debug) cat("  # omputinfg the log likelihood: ll_flexrsurv_GOA0B0AB\n")
   } else {
     nZ <- Z@nZ
     }
+
+  if(Intercept_t0){
+    tmpgamma0 <- GA0B0AB[1:nT0basis]
+  }
+  else {
+    tmpgamma0 <- c(0, GA0B0AB[1:nT0basis])
+  }
+
+  # baseline hazard at the end of the interval
   
-if(debug>200){
-  # output dim settings
-  cat("dim settings \n")
-  cat("gamma0 \n", "**", nT0basis, " ** ", GA0B0AB[1:nT0basis], "++\n")
-  cat("** nX0 **  ialpha0 ==\n")
-  cat("nX0 \n", "**", nX0, " ** ", ialpha0, "==\n")
-  cat(" ** nX   ++ ibeta0  == \n")
-  cat("nX  \n", "**", nX , "++" , ibeta0,  "==\n")
-  cat("** nZ ++ ialpha ==\n")
-if(nZ)  cat("nZ  \n", "**", Z@nZ , "++" , ialpha, "==\n")
-  cat("** nTbasis ++ ibeta ==\n")
-  cat("nTB  \n", "**", nTbasis , "++" , ibeta,   "==\n")
-  if(nZ) print( t(ExpandAllCoefBasis(coef=GA0B0AB[ibeta], ncol=Z@nZ, value=1)))
-  if( nX) print( t(ExpandCoefBasis(coef=GA0B0AB[ibeta0], ncol=nX, splinebasis=Spline_t, expand=!Intercept_t_NPH, value=0)))
-}
+YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
+
 
 
   # contribution of non time dependant variables
@@ -110,27 +106,27 @@ if(nZ)  cat("nZ  \n", "**", Z@nZ , "++" , ialpha, "==\n")
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
   } else {
 #    NPHterm <- intTD(rateTD_bh, Y[,1], fail=Y[,2], 
 #                     step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
 #                     gamma0=GA0B0AB[1:nT0basis],
-#                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0)
-    NPHterm <- integrate(Spline_t0, Y[,1], intercep=Intercept_t0) %*% GA0B0AB[1:nT0basis]
+#                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
+
+#   NPHterm <- integrate(Spline_t0, Y[,1], intercep=Intercept_t0) %*% GA0B0AB[1:nT0basis]
+   NPHterm <- predict(integrate(Spline_t0*tmpgamma0), Y[,1], intercep=Intercept_t0)
   }
-  # spline bases for baseline hazard
-  YT0 <- evaluate(Spline_t0, Y[,1], intercept=Intercept_t0)
   # spline bases for each TD effect
     if(nX + nZ){
       # spline bases for each TD effect
       YT <- evaluate(Spline_t, Y[,1], intercept=TRUE)
       eventterm <- ifelse(Y[,2] ,
-                          log( PHterm * (YT0 %*% GA0B0AB[1:nT0basis]) * exp(apply(YT * Zalphabeta, 1, sum)) + expected_rate ),
+                          log( PHterm * YT0Gamma0 * exp(apply(YT * Zalphabeta, 1, sum)) + expected_rate ),
                           0)
     } else {
       eventterm <- ifelse(Y[,2] , 
-                          log( PHterm * (YT0 %*% GA0B0AB[1:nT0basis]) + expected_rate ), 
+                          log( PHterm * YT0Gamma0 + expected_rate ), 
                           0)
     }
 

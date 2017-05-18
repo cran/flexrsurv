@@ -20,8 +20,8 @@ ReadDesignFlexrsurv<-function(modframe,
   # get the name of the ordered diminsion of de design matrix
   # replace multiplicative by additive to get the correct number of df for each NPHNLL effect
 
-  tempf <- as.character(Terms)
-  tempf <- as.formula(paste(tempf[2], tempf[1], gsub("multiplicative", "additive", tempf[3], fixed=TRUE), collapse=""))
+#  tempf <- as.character(Terms)
+#  tempf <- as.formula(gsub("multiplicative", "additive", tempf, fixed=TRUE))
   XZ<-model.matrix(Terms, data)[, drop = FALSE]
   # names of the coef in the formula
 

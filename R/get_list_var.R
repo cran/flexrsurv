@@ -1,3 +1,9 @@
+get_response_vars.formula <- function(formula, unique=TRUE){
+# output : the names of the variables of the left-hand-size survival object in the formula
+
+  return(all.vars(lhs(formula)))
+  }
+  
 get_all_Xvars.formula <- function(formula, unique=TRUE){
 # output : the names of the X variables in the formula
 

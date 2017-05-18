@@ -11,11 +11,27 @@ setClass("BSplineBasis",
          representation(Matrices="array"),
          contains=".SplineBasis")
 
-# slot SplineBasis of class SplineBasis of package "orthogonalsplinebasis" 
+# slot SplineBasis of class SplineBasis of package "orthogonalsplinebasis"
+# slot knots contains all the knots, including all the duplicated boundary knots
 setClass("MSplineBasis",
          representation(min="numeric",
                         max="numeric",
                         SplineBasis="SplineBasis"),
+         contains="BSplineBasis")
+
+# linearly extended Msplinebasis
+# same parameters/slot as MSplineBasis but methods are different
+# slot knots contains all the knots, including all the duplicated boundary knots
+# slots  linexinf and linexsup are 2x2 matrix such that linear extrapolation is
+#    linexinf %*% c(1, (x-kmin))
+#    linexsup %*% c(1, (x-kmax))
+setClass("LEMSplineBasis",
+         representation(min="numeric",
+                        max="numeric",
+                        SplineBasis="SplineBasis",
+                        orderextrapol ="integer",
+                        linexinf="array",
+                        linexsup="array"),
          contains="BSplineBasis")
 
 setClass("TPSplineBasis",
@@ -39,7 +55,7 @@ setClass("C0BSplineBasis", representation("BSplineBasis",
 setClass("C0TPSplineBasis", representation("TPSplineBasis",
                                           ref="numeric"))
 
-setClassUnion("AnySplineBasis", c("BSplineBasis", "MSplineBasis", "TPSplineBasis"))
+setClassUnion("AnySplineBasis", c("BSplineBasis", "MSplineBasis", "LEMSplineBasis", "TPSplineBasis"))
 
 ##########################################################################################################
 ## Class DesignMatrix*

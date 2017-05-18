@@ -388,7 +388,9 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     ll_alpha0alpha <- ll_flexrsurv_fromto_alpha0alpha
     ll_beta0beta   <- ll_flexrsurv_fromto_beta0beta
     gr_G0A0B0AB    <- gr_ll_flexrsurv_fromto_GA0B0AB
-    opgFunction <- opg_flexrsurv_fromto_G0A0B0AB
+    opgFunction    <- opg_flexrsurv_fromto_G0A0B0AB
+    cumhazFunction <- .computeCumulativeHazard_fromto_GA0B0AB
+    linpredFunction<- .computeLinearPredictor_GA0B0AB
   }
   else {
     ll_G0A0B0AB    <- ll_flexrsurv_fromto_GA0B0AB_bh
@@ -398,7 +400,9 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     ll_alpha0alpha <- ll_flexrsurv_fromto_alpha0alpha
     ll_beta0beta   <- ll_flexrsurv_fromto_beta0beta
     gr_G0A0B0AB    <- gr_ll_flexrsurv_fromto_GA0B0AB_bh
-    opgFunction <- opg_flexrsurv_fromto_G0A0B0AB_bh
+    opgFunction    <- opg_flexrsurv_fromto_G0A0B0AB_bh
+    cumhazFunction <- .computeCumulativeHazard_fromto_GA0B0AB_bh
+    linpredFunction<- .computeLinearPredictor_GA0B0AB
   }
 
   
@@ -531,23 +535,26 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     beta0  <- initbeta0  
     beta   <- initbeta
 
+    initG0A0B0AB <- c(gamma0, alpha0, beta0, alpha, beta)
+
     if(debug) cat("compute init LL value \n")
-    LL <- ll_gamma0(gamma0=gamma0, 
-                    alpha0=alpha0, beta0=beta0,
-                    alpha=alpha, beta=beta,
-                    Y=Y, X0=X0, X=X, Z=Z, 
-                    expected_rate=expected_rate,
-                    weights = weights,
-                    step=step, Nstep=Nstep, 
-                    intTD=intTD, intweightsfunc=intweightsfunc,
-                    nT0basis=nT0basis,
-                    Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
-                    nX0=nX0,
-                    nX=nX, 
-                    nTbasis=nTbasis,
-                    Spline_t = Spline_t, Intercept_t_NPH=Intercept_t_NPH,
-                    debug=debug.ll
-                    )
+    LL <- ll_G0A0B0AB(GA0B0AB= initG0A0B0AB, 
+                      Y=Y, X0=X0, X=X, Z=Z, 
+                      expected_rate=expected_rate,
+                      weights = weights,
+                      step=step, Nstep=Nstep, 
+                      intTD=intTD, intweightsfunc=intweightsfunc,
+                      nT0basis=nT0basis,
+                      Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                      ialpha0=ialpha0, nX0=nX0,
+                      ibeta0= ibeta0, nX=nX, 
+                      ialpha=ialpha, 
+                      ibeta= ibeta, 
+                      nTbasis=nTbasis,
+                      Spline_t = Spline_t, Intercept_t_NPH=Intercept_t_NPH,
+                      debug=debug.ll
+                      )
+
     
     if (debug) {
       cat("LL at init", LL, "\n")
@@ -745,35 +752,36 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
 #   dimnames(var)[[2]] <-names(coef)
 # }
   # computes the linear predictor objfit$linear.predictor
-  linearPredictors <- .computeLinearPredictor_GA0B0AB(GA0B0AB=fit$par,
-                                              Y=Y, X0=X0, X=X, Z=Z,
-                                              nT0basis=nT0basis,
-                                              Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
-                                              ialpha0=ialpha0, nX0=nX0,
-                                              ibeta0= ibeta0, nX=nX, 
-                                              ialpha=ialpha, 
-                                              ibeta= ibeta, 
-                                              nTbasis=nTbasis,
-                                              Spline_t = Spline_t, Intercept_t_NPH=Intercept_t_NPH,
-                                              debug=debug)
+  linearPredictors <- linpredFunction(GA0B0AB=fit$par,
+                                      Y=Y, X0=X0, X=X, Z=Z,
+                                      nT0basis=nT0basis,
+                                      Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                                      ialpha0=ialpha0, nX0=nX0,
+                                      ibeta0= ibeta0, nX=nX, 
+                                      ialpha=ialpha, 
+                                      ibeta= ibeta, 
+                                      nTbasis=nTbasis,
+                                      Spline_t = Spline_t, Intercept_t_NPH=Intercept_t_NPH,
+                                      bhlink = bhlink,
+                                      debug=debug)
   
   # computes the fited rate
   fittedValues <- exp(linearPredictors)
 
   # computes the cumulative rate??  
-  cumulativeHazard <- .computeCumulativeHazard_fromto_GA0B0AB(GA0B0AB=fit$par,
-                                             Y=Y, X0=X0, X=X, Z=Z,
-                                             step=step, Nstep=Nstep, 
-                                             intTD=intTD, intweightsfunc=intweightsfunc,
-                                             nT0basis=nT0basis,
-                                             Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
-                                             ialpha0=ialpha0, nX0=nX0,
-                                             ibeta0= ibeta0, nX=nX, 
-                                             ialpha=ialpha, 
-                                             ibeta= ibeta, 
-                                             nTbasis=nTbasis,
-                                             Spline_t = Spline_t, Intercept_t_NPH=Intercept_t_NPH,
-                                             debug=debug)  
+  cumulativeHazard <- cumhazFunction(GA0B0AB=fit$par,
+                                     Y=Y, X0=X0, X=X, Z=Z,
+                                     step=step, Nstep=Nstep, 
+                                     intTD=intTD, intweightsfunc=intweightsfunc,
+                                     nT0basis=nT0basis,
+                                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                                     ialpha0=ialpha0, nX0=nX0,
+                                     ibeta0= ibeta0, nX=nX, 
+                                     ialpha=ialpha, 
+                                     ibeta= ibeta, 
+                                     nTbasis=nTbasis,
+                                     Spline_t = Spline_t, Intercept_t_NPH=Intercept_t_NPH,
+                                     debug=debug)  
      # convergence assesment
      
   if (conv != TRUE) {
@@ -789,9 +797,11 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
               informationMatrix=informationMatrix,
               loglik = LL,
               weights = weights,
+              bhlink=bhlink,
               optimfunction=algo,
               conv=conv,
               method = "flexrsurv.ll.fromto.fit",
+              numerical_integration_method = method,
               fit=fit,
               start=list(gamma0= initgamma0, alpha0=initalpha0, beta0=initbeta0, alpha=initalpha, beta=initbeta))
   res

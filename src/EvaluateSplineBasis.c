@@ -10,7 +10,7 @@
  *
  * These functions are distributed in the hope that they will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -31,6 +31,9 @@
 #define _(String) (String)
 #endif
 
+#ifndef EVAL_SPLINEPARAM
+#include "SplineParam.h"
+#endif
 
 SEXP eval_spline_basis(SEXP knots, SEXP order, SEXP Matrices, SEXP intercept, SEXP xvals, SEXP outerok)
 {
@@ -38,91 +41,58 @@ SEXP eval_spline_basis(SEXP knots, SEXP order, SEXP Matrices, SEXP intercept, SE
 /* Matrices is a vectorized array of dim order X nbases X number_of_intervales(knots) 
   where nbases is the number of bases of the non integrated, non derived splines
   */
-	R_len_t i, j, k, nknots, theorder, nbases, nx, oo;
-	R_len_t theinterval, firstbasis, mfl;
-	double *rknots, *rMatrices, *rxvals, *rbases;
-	SEXP bases;
-	SEXP dims;
-	double temp, *U, u, outer_val;
-	
-	
-	PROTECT(knots = coerceVector(knots, REALSXP));
-	PROTECT(order = coerceVector(order, INTSXP));
-	PROTECT(intercept = coerceVector(intercept, INTSXP));
-	PROTECT(Matrices = coerceVector(Matrices, REALSXP));
-	PROTECT(xvals = coerceVector(xvals, REALSXP));
-	PROTECT(outerok = coerceVector(outerok, LGLSXP));
+    R_len_t i, j, k, nknots, theorder, nbases, nx, oo;
+    R_len_t theinterval, firstbasis, mfl;
+    double *rknots, *rMatrices, *rxvals, *rbases;
+    SEXP bases;
+    SEXP dims;
+    double temp, *U, u, outer_val;
+    
+    
+    PROTECT(knots = coerceVector(knots, REALSXP));
+    PROTECT(order = coerceVector(order, INTSXP));
+    PROTECT(intercept = coerceVector(intercept, INTSXP));
+    PROTECT(Matrices = coerceVector(Matrices, REALSXP));
+    PROTECT(xvals = coerceVector(xvals, REALSXP));
+    PROTECT(outerok = coerceVector(outerok, LGLSXP));
 
 
-	rknots = REAL(knots); 
-	nknots = length(knots);
-	theorder = INTEGER(order)[0];
+    rknots = REAL(knots); 
+    nknots = length(knots);
+    theorder = INTEGER(order)[0];
 
-	dims = getAttrib(Matrices, R_DimSymbol);
-	if( LENGTH(dims) < 3 ){
-		error("'Matrices' must be an array with 3 dim");   
-	}
-	nbases = INTEGER(dims)[1];
-	
-	rxvals = REAL(xvals); 
-	nx = length(xvals);
+    dims = getAttrib(Matrices, R_DimSymbol);
+    if( LENGTH(dims) < 3 ){
+        error("'Matrices' must be an array with 3 dim");   
+    }
+    nbases = INTEGER(dims)[1];
+    
+    rxvals = REAL(xvals); 
+    nx = length(xvals);
 
-	firstbasis = (INTEGER(intercept)[0]==0);
-	rMatrices = REAL(Matrices);
-		
-	PROTECT(bases = allocMatrix(REALSXP, nx, nbases-firstbasis));
-	rbases = REAL(bases);
+    firstbasis = (INTEGER(intercept)[0]==0);
+    rMatrices = REAL(Matrices);
+        
+    PROTECT(bases = allocMatrix(REALSXP, nx, nbases-firstbasis));
+    rbases = REAL(bases);
 
-	oo = asLogical(outerok);
-	
-	U = (double *) R_alloc( theorder, sizeof(double));
-	if(oo == NA_LOGICAL) {
-		error("'outer.ok' must be TRUE or FALSE");    
-	} else  if (oo) {
-		outer_val = 0.0;
-	} else {
-		outer_val = R_NaN;
-	}
+    oo = asLogical(outerok);
+    
+    U = (double *) R_alloc( theorder, sizeof(double));
+    if(oo == NA_LOGICAL) {
+        error("'outer.ok' must be TRUE or FALSE");    
+    } else  if (oo) {
+        outer_val = 0.0;
+    } else {
+        outer_val = R_NaN;
+    }
 
-	U[0]=1.0;
-	for(i = 0; i < nx; i++) {
-	    if (ISNAN(rxvals[i])) {
-		    for (j = 0; j < nbases - firstbasis; j++) {
-			    rbases[i +nx * j] = R_NaN;
-		    }
-	    } else {
-		    theinterval= 1;
-		    mfl = 0;
-/* find the interval within the range of all the knots (which include boundaries) 
-   of rxvals[i], rightmost_close=TRUE, all_inside = FALSE */ 
-		    theinterval = findInterval(rknots, nknots, rxvals[i], 1, 0 , theinterval, &mfl );
-		    if (theinterval == 0 || theinterval == nknots  ) {
-			    for (j = 0; j < nbases - firstbasis; j++) {
-				    rbases[i + nx * j] = outer_val;
-			    }
-		    } else {
-			    if( theinterval == nknots -1) {
-				    /* xx[i] is the rightmost boundary knot */
-				    theinterval = nknots - theorder;
-			    }
-			    u = (rxvals[i] - rknots[theinterval-1])/(rknots[theinterval]-rknots[theinterval-1]);
-			    for ( j = 1; j < theorder ; j++) {
-				    U[j] = pow(u, (double)j);
-			    }
-			    /* the usefull matrix is the (theinterval - theorder +1)th matrix of Matrices */
-			    theinterval = theinterval - theorder;  
-			    for (k = firstbasis; k < nbases; k++) {
-				    temp = 0;
-				    for (int j = 0; j < theorder ; j++) {
-					    temp += U[j] * rMatrices[theorder*nbases*theinterval+ theorder*k + j];
-				    }
-				    rbases[i + nx * (k-firstbasis)] = temp;
-			    }
-		    }
-	    }
-	    
-	}
-	
-	unprotect(7);
-	return(bases);
+     
+    U[0]=1.0;
+    for(i = 0; i < nx; i++) {
+	    EVALUATE_one_spline_basis (rxvals[i], rbases, i + nx *)   
+    }
+    
+    UNPROTECT(7);
+    return(bases);
 }

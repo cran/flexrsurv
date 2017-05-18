@@ -1,4 +1,4 @@
-cutT<-function(T, step, mult=2, min=mult, max=+Inf){
+cutT<-function(T, step, mult=2L, min=as.integer(mult), max=+Inf){
   # cut T in Nstep regular sub intervals such that T/Nstep ~step
   # mult : Nstep = mult * i
 
@@ -10,7 +10,7 @@ cutT<-function(T, step, mult=2, min=mult, max=+Inf){
 }
 
 
-cutTfromto<-function(fromT, toT, step, mult=2, min=mult, max=+Inf){
+cutTfromto<-function(fromT, toT, step, mult=2, min=as.integer(mult), max=+Inf){
   # cut T in Nstep regular sub intervals such that T/Nstep ~step
   # mult : Nstep est une multiple de mult
 

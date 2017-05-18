@@ -1,0 +1,18 @@
+NEWS about R package flexrsurv
+
+Version 1.4.1 - 2017-05-12
+      o registration of native routines
+Version 1.3.7 - 2017-01-12
+
+      o New predict() S3 method for fexrsurv objects produced by flexrsurv() see help(predict.flexrsurv)
+      o Change in the default values of the boundary knots of the time (Boundary.knots.t) in NPH and NPHNLL terms. The default is now the boundary knots of the baseline hazard. 
+      o Fix issue when the variance matrix cannot be computed
+      o New dependecy: package:formula.tools in Depends and package:ggplot2 in suggested
+ 
+Version 1.3.6 - not released
+Version 1.3.5 - not released
+Version 1.3.4 - not released
+
+Version 1.3.3 - 2016-04-26
+       o First version released on CRAN
+

@@ -32,7 +32,7 @@ make.glm.formula <- function(formula, data,
 
       # change timevar in NPH() call
   if(length(NamesNPHVars) >0){
-    for (i in attr(Terms, "specials")["NPH"]){
+    for (i in attr(Terms, "specials")[["NPH"]]){
       for (k in 1:length(i)){        
         thecall <-  match.call(NPH, attr(Terms,"variables")[[i[k]+1]])
         modified <- modified + 1
@@ -48,7 +48,7 @@ make.glm.formula <- function(formula, data,
   
       # change timevar in NPHNLL() call
   if(length(NamesNPHNLLVars) >0){
-    for (i in attr(Terms, "specials")["NPHNLL"]){
+    for (i in attr(Terms, "specials")[["NPHNLL"]]){
       for (k in 1:length(i)){        
         thecall <-  match.call(NPHNLL, attr(Terms,"variables")[[i[k]+1]])
         modified <- modified + 1

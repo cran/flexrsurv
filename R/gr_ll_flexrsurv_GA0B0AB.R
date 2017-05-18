@@ -53,33 +53,22 @@ if (debug.gr) cat("# computing gradient: gr_ll_flexrsurv_GA0B0AB\n")
 
   if(is.null(Z)){
     nZ <- 0
+  } else {
+    nZ <- Z@nZ
+    }
+
+  if(Intercept_t0){
+    tmpgamma0 <- GA0B0AB[1:nT0basis]
   }
   else {
-    nZ <- Z@nZ
+    tmpgamma0 <- c(0, GA0B0AB[1:nT0basis])
   }
+
+  # baseline hazard at the end of the interval
   
-if(debug.gr>200){
-  # output dim settings
-  cat("dim settings \n")
-  cat("gamma0 \n", "**", nT0basis, " ** ", GA0B0AB[1:nT0basis], "++\n")
-  cat("** nX0 **  ialpha0 ==\n")
-  cat("nX0 \n", "**", nX0, " ** ", ialpha0, "==\n")
-  cat(" ** nX   ++ ibeta0  == \n")
-  cat("nX  \n", "**", nX , "++" , ibeta0,  "==\n")
-  cat("** nZ ++ ialpha ==\n")
-if(nZ>0){
-  cat("nZ  \n", "**", Z@nZ , "++" , ialpha, "==\n")
-}
-  cat("** nTbasis ++ ibeta ==\n")
-  cat("nTB  \n", "**", nTbasis , "++" , ibeta,   "==\n")
-  if(nZ) print( t(ExpandAllCoefBasis(coef=GA0B0AB[ibeta], ncol=Z@nZ, value=1)))
-  if( nX) print( t(ExpandCoefBasis(coef=GA0B0AB[ibeta0], ncol=nX, splinebasis=Spline_t, expand=!Intercept_t_NPH, value=0)))
-}
+YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
 
 
-
-#if ( debug.gr) cat("  # contribution of time d?pendant effect nX0*", nX0,
-#                "*alpha0alpha[ialpha0] *", alpha0alpha[ialpha0], "* \n")
   # contribution of non time dependant variables
   if( nX0){
     PHterm <-exp(X0 %*% GA0B0AB[ialpha0])
@@ -88,8 +77,6 @@ if(nZ>0){
   }
   # contribution of time d?pendant effect
   # parenthesis are important for efficiency
-#if ( debug.gr) cat("  # contribution of time d?pendant effect nZ*", nZ, "* nX*", nX, "* \n")
-#if ( debug.gr) cat("  # contribution of time d?pendant effect *alpha0alpha[ialpha] *", alpha0alpha[ialpha], "* \n")
   if(nZ) {
     # add a row for the first basis
     tBeta <- t(ExpandAllCoefBasis(GA0B0AB[ibeta], ncol=nZ,  value=1))
@@ -104,8 +91,7 @@ if(nZ>0){
                                                          expand=!Intercept_t_NPH,
                                                          value=0))
     }
-  }
-  else {
+  } else {
     if(nX) {
       Zalphabeta <- X %*% t(ExpandCoefBasis(GA0B0AB[ibeta0],
                                             ncol=nX,
@@ -120,14 +106,14 @@ if(nZ>0){
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
 
     Intb0 <-  intTD_base(func=rateTD_gamma0alphabeta, T=Y[,1],  fail=Y[,2],
                          Spline=Spline_t0,
                          step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                          gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
-                         Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                         Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                          Spline_t = Spline_t, Intercept_t=TRUE,
                          debug=debug.gr)
     if( identical(Spline_t0, Spline_t)){
@@ -138,7 +124,7 @@ if(nZ>0){
                           Spline=Spline_t,
                           step=step, Nstep=Nstep, intweightsfunc=intweightsfunc,
                           gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
-                          Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                          Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                           Spline_t = Spline_t, Intercept_t=TRUE)
     }
     if(!Intercept_t0){
@@ -149,19 +135,19 @@ if(nZ>0){
     YT0 <- fevaluate(Spline_t0, Y[,1], intercept=Intercept_t0)
     YT <- fevaluate(Spline_t, Y[,1], intercept=TRUE)
     RatePred <- ifelse(Y[,2] ,
-                       PHterm * exp(YT0 %*% GA0B0AB[1:nT0basis] + apply(YT * Zalphabeta, 1, sum)),
+                       PHterm * exp(YT0Gamma0 + apply(YT * Zalphabeta, 1, sum)),
                        0)
   }
   else {
     NPHterm <- intTD(rateTD_gamma0, Y[,1],  fail=Y[,2], 
                      step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis],
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0)
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
     Intb0 <-  intTD_base(func=rateTD_gamma0, T=Y[,1],  fail=Y[,2],
                          Spline=Spline_t0,
                          step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                          gamma0=GA0B0AB[1:nT0basis], 
-                         Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                         Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                          debug=debug.gr)
     if(!Intercept_t0){
      Intb0<- Intb0[,-1]
@@ -171,7 +157,7 @@ if(nZ>0){
     YT <- NULL
 
     RatePred <- ifelse(Y[,2] ,
-                       PHterm * exp(YT0 %*% GA0B0AB[1:nT0basis]) ,
+                       PHterm * exp(YT0Gamma0),
                        0)
                          
   }

@@ -1,3 +1,6 @@
+# the spline basis of the baseline hazard are scaled by the parameter gamma0,
+# the spline basis of the NPH NPHNLL effect are the normalised spline basis
+
 rateTD_beta0alphabeta<- function(T, iT, gamma0, Zbeta0, Zalphabeta, 
                       Spline_t0=SplineBasis(knots=NULL,  order=4,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                       Spline_t =SplineBasis(knots=NULL,  order=4,   keep.duplicates=TRUE), Intercept_t=TRUE, ...){
@@ -9,23 +12,24 @@ rateTD_beta0alphabeta<- function(T, iT, gamma0, Zbeta0, Zalphabeta,
   # Zbeta0     = X %*% beta0 
   # Zalphabeta = f(Z,alpha) %*% beta 
 
-  #  YT0 <- bs(T, knots=Knots_t0, intercept=Intercept_t0, degree=degree_t0, Boundary.knots =  Boundary.knots_t0)
-    YT0 <- fevaluate(Spline_t0, T, intercept=Intercept_t0, outer.ok=TRUE)
+
+  # predicted log-baseline hazard
+    YT0Gamma0 <- predictSpline(Spline_t0, T, intercept=Intercept_t0, outer.ok=TRUE)
   # spline bases for each TD effect
 #  YT  <- bs(T, knots=Knots_t, intercept=Intercept_t, degree=degree_t, Boundary.knots =  Boundary.knots_t)
     if(!is.null(Zbeta0)) {
       if(!is.null(Zalphabeta)) {
-        exp(YT0 %*% gamma0 +
+        exp(YT0Gamma0 + 
             fevaluate(Spline_t, T, intercept=Intercept_t, outer.ok=TRUE) %*% Zbeta0[iT,] +
             fevaluate(Spline_t, T, intercept=Intercept_t, outer.ok=TRUE) %*% Zalphabeta[iT,])
       }
       else {
-        exp(YT0 %*% gamma0 +
+        exp(YT0Gamma0 + 
             fevaluate(Spline_t, T, intercept=Intercept_t, outer.ok=TRUE) %*% Zbeta0[iT,] )
       }
     }
     else if(!is.null(Zalphabeta)) {
-        exp(YT0 %*% gamma0 +
+        exp(YT0Gamma0 + 
             fevaluate(Spline_t, T, intercept=Intercept_t, outer.ok=TRUE) %*% Zalphabeta[iT,])
       }
 }
@@ -38,14 +42,16 @@ rateTD_gamma0alphabeta<- function(T, iT, gamma0, Zalphabeta,
   # at a vector of T (useful to compute numerical integration 
    # all T basis for the NPH/td effects are the same (Spline_t)
   # Zalphabeta = X %*% beta0 + f(Z,alpha) %*% beta 
+  # Spline_t0 : splines parameters for the baseline hazard multiplied by gamma0
+  #           : thus no nead to multiply each spline coordinate by its coef
 
-  # spline bases for baseline hazard
-    YT0 <- fevaluate(Spline_t0, T, intercept=Intercept_t0, outer.ok=TRUE)
+  # predicted log-baseline hazard
+    YT0Gamma0 <- predictSpline(Spline_t0, T, intercept=Intercept_t0, outer.ok=TRUE)
   # spline bases for each TD effect
     YT <- fevaluate(Spline_t, T, intercept=Intercept_t, outer.ok=TRUE)
 
-  # returned value 
-  exp(YT0 %*% gamma0 + YT %*% Zalphabeta[iT,])
+  # returned value
+  exp(YT0Gamma0 + YT %*% Zalphabeta[iT,])
   
 }
 
@@ -70,12 +76,14 @@ rateTD_gamma0<- function(T, iT, gamma0,
   # compute the contribution of the baseline hazard rate to the rate 
   # of relative survival model for patient iT with Zalphabeta[iT, ]
   # at a vector of T (useful to compute numerical integration 
- 
+  # Spline_t0 : splines parameters for the baseline hazard multiplied by gamma0
+  #           : thus no nead to multiply each spline coordinate by its coef
+
   # spline bases for baseline hazard
-    YT0 <- fevaluate(Spline_t0, T, intercept=Intercept_t0, outer.ok=TRUE)
+    YT0Gamma0 <- predictSpline(Spline_t0, T, intercept=Intercept_t0, outer.ok=TRUE)
   # returned value
 
-  exp(YT0 %*% gamma0)
+  exp(YT0Gamma0)
   
 }
 
@@ -127,7 +135,7 @@ rateTD_gamma0alphabetaeta0<- function(T, iT,
 
     for(iW in 1:nW){
       for(iId in FirstId[iT]:iT){
-        WCE <- WCE - W[iId, iW] * predictSpline(ISpline_W[[iW]], T-fromT[iId], intercept=Intercept_W[[iW]], outer.ok=TRUE)  
+        WCE <- WCE + W[iId, iW] * predictSpline(ISpline_W[[iW]], T-fromT[iId], intercept=Intercept_W[[iW]], outer.ok=TRUE)  
       }
     }
   # returned value 
@@ -163,13 +171,21 @@ rateTD_gamma0eta0<- function(T, iT,
 #  print("rateTD_gamma0eta0")
   
   # spline bases for baseline hazard
+#  cat("************************************************************************\niT, T, first: ")
+#  cat(c(iT, FirstId[iT], T))
+#  cat("\n")
+      
     WCE <- predictSpline(Spline_t0, T, intercept=Intercept_t0, outer.ok=TRUE)
     for(iW in 1:nW){
       for(iId in FirstId[iT]:iT){
+#  cat("iId, W[Iid, iW], fromT[iId]: ")
+#  cat(c(iId, W[iId, iW], fromT[iId]))
+#  cat("\n")
+#  print(cbind(T, predictSpline(ISpline_W[[iW]], T-fromT[iId], intercept=Intercept_W[[iW]], outer.ok=TRUE)))
         WCE <- WCE + W[iId, iW] * predictSpline(ISpline_W[[iW]], T-fromT[iId], intercept=Intercept_W[[iW]], outer.ok=TRUE)  
       }
     }
-  # returned value 
+  # returned value
   exp(WCE)
   
 }

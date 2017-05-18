@@ -60,11 +60,21 @@ if ( debug.gr) cat("  # ll_maha_gamma0alpha0beta0alphabetaGRAD\n")
 
   if(is.null(Z)){
     nZ <- 0
+  } else {
+    nZ <- Z@nZ
+    }
+
+  if(Intercept_t0){
+    tmpgamma0 <- GA0B0AB[1:nT0basis]
   }
   else {
-    nZ <- Z@nZ
+    tmpgamma0 <- c(0, GA0B0AB[1:nT0basis])
   }
   
+  # baseline hazard at the end of the interval
+  
+YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
+
 if(debug.gr>200){
   # output dim settings
   cat("dim settings \n")
@@ -111,8 +121,7 @@ if(nZ>0){
                                                          expand=!Intercept_t_NPH,
                                                          value=0))
     }
-  }
-  else {
+  } else {
     if(nX) {
       Zalphabeta <- X %*% t(ExpandCoefBasis(GA0B0AB[ibeta0],
                                             ncol=nX,
@@ -127,14 +136,14 @@ if(nZ>0){
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
 
     Intb0 <-  intTD_base(func=rateTD_gamma0alphabeta, T=Y[,1],  fail=Y[,2],
                          Spline=Spline_t0,
                          step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                          gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
-                         Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                         Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                          Spline_t = Spline_t, Intercept_t=TRUE,
                          debug=debug.gr)
     if( identical(Spline_t0, Spline_t)){
@@ -145,7 +154,7 @@ if(nZ>0){
                           Spline=Spline_t,
                           step=step, Nstep=Nstep, intweightsfunc=intweightsfunc,
                           gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
-                          Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                          Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                           Spline_t = Spline_t, Intercept_t=TRUE)
     }
     if(!Intercept_t0){
@@ -156,19 +165,19 @@ if(nZ>0){
     YT0 <- fevaluate(Spline_t0, Y[,1], intercept=Intercept_t0)
     YT <- fevaluate(Spline_t, Y[,1], intercept=TRUE)
     RatePred <- ifelse(Y[,2] ,
-                       PHterm * exp(YT0 %*% GA0B0AB[1:nT0basis] + apply(YT * Zalphabeta, 1, sum)),
+                       PHterm * exp(YT0Gamma0 + apply(YT * Zalphabeta, 1, sum)),
                        0)
   }
   else {
     NPHterm <- intTD(rateTD_gamma0, Y[,1],  fail=Y[,2], 
                      step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis],
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0)
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
     Intb0 <-  intTD_base(func=rateTD_gamma0, T=Y[,1],  fail=Y[,2],
                          Spline=Spline_t0,
                          step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                          gamma0=GA0B0AB[1:nT0basis], 
-                         Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                         Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                          debug=debug.gr)
     if(!Intercept_t0){
      Intb0<- Intb0[,-1]
@@ -183,19 +192,19 @@ if(nZ>0){
                          
   }
 
-F <- ifelse(Y[,2] ,
-            RatePred/(RatePred + expected_rate ), 
-            0)
+  F <- ifelse(Y[,2] ,
+              RatePred/(RatePred + expected_rate ), 
+              0)
 
-if(nX + nZ) {
-  if(nX0>0) {
-    Intb <- Intb * c(PHterm)
+  if(nX + nZ) {
+    if(nX0>0) {
+      Intb <- Intb * c(PHterm)
+    }
+    IntbF <- YT*F - Intb
   }
-  IntbF <- YT*F - Intb
-}
-else {
-   IntbF <- NULL
- }
+  else {
+    IntbF <- NULL
+  }
   Intb0 <- Intb0 * c(PHterm)
 
 

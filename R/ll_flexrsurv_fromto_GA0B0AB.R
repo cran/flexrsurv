@@ -55,7 +55,18 @@ ll_flexrsurv_fromto_GA0B0AB<-function(GA0B0AB, Y, X0, X, Z,
     nZ <- 0
   } else {
     nZ <- Z@nZ
-    }
+  }
+
+  if(Intercept_t0){
+    tmpgamma0 <- GA0B0AB[1:nT0basis]
+  }
+  else {
+    tmpgamma0 <- c(0, GA0B0AB[1:nT0basis])
+  }
+
+  # baseline hazard at the end of the interval
+  
+YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,2], intercept=Intercept_t0)
 
 
 
@@ -96,26 +107,25 @@ ll_flexrsurv_fromto_GA0B0AB<-function(GA0B0AB, Y, X0, X, Z,
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
   } else {
     NPHterm <- intTD(rateTD_gamma0, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
                      step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis],
-                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0)
+                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
   }
-  # spline bases for baseline hazard at the end of the interval
-  YT0 <- evaluate(Spline_t0, Y[,2], intercept=Intercept_t0)
+  
   # spline bases for each TD effect
     if(nX + nZ){
       # spline bases for each TD effect at the end of the interval
       YT <- evaluate(Spline_t, Y[,2], intercept=TRUE)
       eventterm <- ifelse(Y[,3] ,
-                          log( PHterm * exp(YT0 %*% GA0B0AB[1:nT0basis] + apply(YT * Zalphabeta, 1, sum)) + expected_rate ),
+                          log( PHterm * exp(YT0Gamma0 + apply(YT * Zalphabeta, 1, sum)) + expected_rate ),
                           0)
     } else {
       eventterm <- ifelse(Y[,3] , 
-                          log( PHterm * exp(YT0 %*% GA0B0AB[1:nT0basis]) + expected_rate ), 
+                          log( PHterm * exp(YT0Gamma0) + expected_rate ), 
                           0)
     }
 

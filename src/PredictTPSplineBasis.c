@@ -34,6 +34,10 @@
 #define _(String) (String)
 #endif
 
+#ifndef EVAL_SPLINEPARAM
+#include "SplineParam.h"
+#endif
+
 SEXP predict_trunc_power_basis(SEXP knots, SEXP replicates, SEXP min, SEXP max, SEXP order, 
 					SEXP coefs, SEXP degrees, SEXP intercept, 
 					SEXP xvals, SEXP outerok)
@@ -104,41 +108,8 @@ xvals : vector values at which bases are computed
 	}
 
 	for(i = 0; i < nx; i++) {
-		if (ISNAN(rxvals[i])) {
-			rpredict[i] = R_NaN;
-		} 
-		else {
-			if (rxvals[i]< rmin || rxvals[i] > rmax) {
-				rpredict[i] = outer_val;
-			} 
-			else {
-				theinterval= 1;
-				mfl = 0;
 
-/* find the interval within interior knots (which exclude boundaries(min max)) of rxvals[i], 
-	rightmost_close=TRUE, all_inside = FALSE 
-	if theinterval == 0, xvals[i]<knots[0] first interior knot
-	if theinterval == nknots , xvals[i]>knots[nknots] last interior knot
-*/ 
-				theinterval = findInterval(rknots, nknots, rxvals[i], 1, 0 , theinterval, &mfl );
-				icoef=0;
-				temppredict = 0;
-				/* the first theorder bases are powers of xvals */
-				for ( j = firstbasis; j < theorder ; j++) {
-					temppredict = temppredict + pow(rxvals[i], j) * rcoefs[j];
-					icoef++; 
-				}  
-				ibase=0;
-				for (k = 0; k < theinterval; k++) {
-					for (j = rreplicates[k]; j > 0 ; j--) {
-						temppredict = temppredict + pow((rxvals[i] - rknots[k]), rdegrees[ibase]) * rcoefs[icoef];
-						ibase++;
-						icoef++;
-					}
-				}
-				rpredict[i] = temppredict;
-			} 
-		}
+        PREDIC_one_trunc_power_basis(rxvals[i], rpredict[i])
 	}
 	
 	UNPROTECT(11);

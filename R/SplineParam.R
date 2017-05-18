@@ -1,4 +1,5 @@
-# Methods for classes *SplineBasis defined in AllClass.R 
+# Methods for classes *SplineBasis
+# classes *SplineBasis are defined in AllClass.R 
 
 
 ###################################################################################
@@ -42,12 +43,61 @@ MSplineBasis<-function(knots, degree=3, keep.duplicates=FALSE, log=FALSE) {
             degree=as.integer(degree), nbases=as.integer(q), Matrices=M, SplineBasis=SB, log=log)
 }
 
+LEMSplineBasis<-function(knots, degree=3, keep.duplicates=FALSE, log=FALSE) {
+  # for linearly extended M-splines,
+  # knots are 1 boundary min knots, interior knots, 1 boundary max knots
+  # boundary knots are not tested to be duplicated
+  # code from orthogonalsplinebasis
+        order<-degree+1
+	n<-length(knots)
+        if( n ==2 ){
+# no interior knots
+          knots<-c(rep(knots[1], order), rep(knots[n], order))
+        }
+        else {
+          if(any(table(knots[2:(n-1)])>1)&&!keep.duplicates){
+            warning("Duplicate interior knots. Removing duplicates.\n    (use keep.duplicates=TRUE to keep duplicates)")
+                # modif MGk 06/06/2011 to keep the (order-1) first and last knots 
+            oknots <- knots
+            iknots<-unique(oknots[2:(n-1)])
+            knots<-c(rep(oknots[1], order), iknots, rep(oknots[n], order))
+          }
+          else {
+            # just duplicates first and last knots
+            oknots <- knots
+            iknots<-oknots[2:(n-1)]
+            knots<-c(rep(oknots[1], order), iknots, rep(oknots[n], order))
+          }            
+        }
+        # recompute n number of knots
+        n <- length(knots)
+	q <- n-order
+
+        SB <- orthogonalsplinebasis::SplineBasis(knots=knots, order=order, keep.duplicates=keep.duplicates)
+	M<-SB@Matrices
+
+        # coef of the linear extrapolation
+        linexinf <- matrix(0, ncol=q, nrow=order)
+        linexinf[1,] <- evaluate(SB, knots[1])
+        linexinf[2,] <- evaluate(deriv(SB), knots[1])
+
+        linexsup <-  matrix(0, ncol=q, nrow=order)
+        linexsup[1,] <- evaluate(SB, knots[n])
+        linexsup[2,] <- evaluate(deriv(SB), knots[n])
+        
+	new("LEMSplineBasis", knots=knots, min=knots[1], max=knots[length(knots)], linexinf=linexinf, linexsup=linexsup,
+            orderextrapol = 1L, 
+            degree=as.integer(degree), nbases=as.integer(q), Matrices=M, SplineBasis=SB, log=log)
+}
+
 MSplineBasis2<-function(allknots, degree=3, keep.duplicates=FALSE, log=FALSE) {
   # for B-splines, allknots are degree+1 boundary min knots, interior knots, degere+1 boundary max knots
   # the 2x4 boundary knots are equal
   # code from orthogonalsplinebasis
         order<-degree+1
 	n<-length(allknots)
+        knots<-allknots  # !! all the boundary knots are given
+
         if( n ==2*order ){
 # no interior knots
           knots<-allknots  # !! all the boundary knots are given
@@ -65,6 +115,45 @@ MSplineBasis2<-function(allknots, degree=3, keep.duplicates=FALSE, log=FALSE) {
         SB <- orthogonalsplinebasis::SplineBasis(knots=knots, order=order, keep.duplicates=keep.duplicates)
 	M<-SB@Matrices
 	new("BSplineBasis", knots=knots, min=knots[1], max=knots[length(knots)],
+            degree=as.integer(degree), nbases=as.integer(q), Matrices=M, SplineBasis=SB, log=log)
+}
+
+LEMSplineBasis2<-function(allknots, degree=3, keep.duplicates=FALSE, log=FALSE) {
+  # for linearly extended M-splines,
+  # for B-splines, allknots are degree+1 boundary min knots, interior knots, degere+1 boundary max knots
+  # the 2x4 boundary knots are equal
+  # code from orthogonalsplinebasis
+        order<-degree+1
+	n<-length(allknots)
+        knots<-allknots  # !! all the boundary knots are given
+        if( n ==2*order ){
+# no interior knots
+          knots<-allknots  # !! all the boundary knots are given
+        }
+        else {
+          if(any(table(allknots[order:(n-order+1)])>1)&&!keep.duplicates){
+		warning("Duplicate interior knots. Removing duplicates.\n    (use keep.duplicates=TRUE to keep duplicates)")
+                # modif MGk 06/06/2011 to keep the (order-1) first and last knots 
+                oknots <- allknots
+		iknots<-unique(oknots[(order+1):(n-order)])
+		knots<-c(rep(oknots[order], order), iknots, rep(oknots[n-order+1], order))
+              }
+        }
+	q<-n-order
+        SB <- orthogonalsplinebasis::SplineBasis(knots=knots, order=order, keep.duplicates=keep.duplicates)
+	M<-SB@Matrices
+
+        # coef of the linear extrapolation
+        linexinf <- matrix(0, ncol=q, nrow=order)
+        linexinf[1,] <- evaluate(SB, knots[1])
+        linexinf[2,] <- evaluate(deriv(SB), knots[1])
+
+        linexsup <-  matrix(0, ncol=q, nrow=order)
+        linexsup[1,] <- evaluate(SB, knots[n])
+        linexsup[2,] <- evaluate(deriv(SB), knots[n])
+        
+        
+	new("LEMSplineBasis", knots=knots, min=knots[1], max=knots[length(knots)], linexinf=linexinf, linexsup=linexsup,
             degree=as.integer(degree), nbases=as.integer(q), Matrices=M, SplineBasis=SB, log=log)
 }
 
@@ -352,9 +441,8 @@ FEvaluateMBasis<-function(object, x, intercept=TRUE, outer.ok=TRUE, ...) {
   M<-object@Matrices
   knots<-object@knots
   order<-object@degree+1
-  basis <- .Call("eval_spline_basis", as.double(knots), as.integer(order), M, 
-                 as.integer(intercept), as.double(x), as.integer(outer.ok),
-                 PACKAGE="flexrsurv")
+  basis <- .Call(C_eval_spline_basis, as.double(knots), as.integer(order), M, 
+                 as.integer(intercept), as.double(x), as.integer(outer.ok))
 
   if (object@log) {
     return(cbind(basis, log(x)))
@@ -371,7 +459,7 @@ EvaluateMBasis<-function(object,x,intercept=TRUE, xname=NULL, outer.ok=TRUE, nam
   basis <- FEvaluateMBasis(object=object, x=x,
                            intercept=intercept, 
                            xname=xname,
-                           outer.ok=TRUE, ...) 
+                           outer.ok= outer.ok, ...) 
 
   Aknots<-object@knots
   degree<-object@degree
@@ -397,6 +485,60 @@ EvaluateMBasis<-function(object,x,intercept=TRUE, xname=NULL, outer.ok=TRUE, nam
   class(basis) <- c("bs", "basis", "matrix")
   basis
 }
+
+# evaluate linearly extended Bspline
+FEvaluateLEMBasis<-function(object, x, intercept=TRUE, outer.ok=TRUE, ...) {
+  stopifnot(is.numeric(x))
+  dots<-list(...)
+  M<-object@Matrices
+  linexinf<-object@linexinf
+  linexsup<-object@linexsup
+  knots<-object@knots
+  order<-object@degree+1L
+orderextrapol <- object@orderextrapol
+  basis <- .Call(C_eval_linex_spline_basis, as.double(knots), as.integer(order), M, linexinf, linexsup,
+                 as.integer(orderextrapol), as.integer(intercept), as.double(x), as.integer(outer.ok))
+
+  if (object@log) {
+    return(cbind(basis, log(x)))
+  }
+ else {
+   return(basis)
+ }
+
+}
+
+EvaluateLEMBasis<-function(object, x, intercept=TRUE, xname=NULL, outer.ok=TRUE, namespline= "B", ...) {
+  basis <- FEvaluateLEMBasis(object=object, x=x,
+                           intercept=intercept, 
+                           outer.ok=outer.ok) 
+
+  Aknots<-object@knots
+  degree<-object@degree
+  nbases<-object@nbases
+
+  
+    #add dimnames
+  if(!is.null(xname)){
+    if (intercept) {
+      dbs <- paste(namespline, "-", xname, ":", 1:(getNBases(object)+getLog(object)), sep="")
+    }
+    else {
+      dbs <- paste(namespline, "-", xname, ":", 2:(getNBases(object)+getLog(object)), sep="")
+    }
+    dimnames(basis)[[2]] <- dbs
+  }
+
+
+#  dimnames(basis) <- list(nx, 1L:n.col)
+  a <- list(degree = degree, knots =  Aknots, 
+            intercept = intercept, log=getLog(object))
+  attributes(basis) <- c(attributes(basis), a)
+  class(basis) <- c("bs", "basis", "matrix")
+  basis
+}
+
+
 
 # evaluate tp Basis, no ndimnames
 FEvaluateTPBasisPosOld<-function(object,x,intercept=TRUE, ref=NULL, xmin=-Inf, xmax=+Inf, outer.ok=TRUE, ...) { 
@@ -510,10 +652,9 @@ FEvaluateTPBasisPos<-function(object,x,intercept=TRUE, ref=NULL, xmin=-Inf, xmax
   replicates <- table(allknots)
   degrees <- object@degrees
   coef <- object@coef
-  basis <- .Call("eval_trunc_power_basis", as.double(knots), as.double(replicates),
+  basis <- .Call(C_eval_trunc_power_basis, as.double(knots), as.double(replicates),
                  as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
-                 as.double(x), as.integer(outer.ok),
-                 PACKAGE="flexrsurv")
+                 as.double(x), as.integer(outer.ok))
 
   return(basis)
   
@@ -525,7 +666,7 @@ EvaluateTPBasisPos<-function(object,x,intercept=TRUE, ref=NULL, xname=NULL, xmin
   basis <- FEvaluateTPBasisPos(object=object, x=x,
                              intercept=intercept, ref=ref,
                              xname=xname,
-                             outer.ok=TRUE, ...) 
+                             outer.ok=outer.ok, ...) 
 
 
   Aknots<-object@knots
@@ -627,10 +768,9 @@ FEvaluateTPBasisstd<-function(object,x,intercept=TRUE, ref=NULL, xmin=-Inf, xmax
   replicates <- table(allknots)
   degrees <- object@degrees
   coef <- object@coef
-  basis <- .Call("eval_trunc_power_increasing_basis", as.double(knots), as.double(replicates),
+  basis <- .Call(C_eval_trunc_power_increasing_basis, as.double(knots), as.double(replicates),
                  as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
-                 as.double(x), as.integer(outer.ok),
-                 PACKAGE="flexrsurv")
+                 as.double(x), as.integer(outer.ok))
 
   return(basis)
 }
@@ -660,16 +800,14 @@ FEvaluateTPBasis<-function(object,x,intercept=TRUE, ref=NULL, xmin=-Inf, xmax=+I
   coef <- object@coef
 
   if(object@type == "increasing"){
-    basis <- .Call("eval_trunc_power_increasing_basis", as.double(knots), as.double(replicates),
+    basis <- .Call(C_eval_trunc_power_increasing_basis, as.double(knots), as.double(replicates),
                    as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
-                   as.double(x), as.integer(outer.ok),
-                   PACKAGE="flexrsurv")
+                   as.double(x), as.integer(outer.ok))
   }
   else {
-  basis <- .Call("eval_trunc_power_basis", as.double(knots), as.double(replicates),
+  basis <- .Call(C_eval_trunc_power_basis, as.double(knots), as.double(replicates),
                  as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
-                 as.double(x), as.integer(outer.ok),
-                 PACKAGE="flexrsurv")
+                 as.double(x), as.integer(outer.ok))
   }
   if (object@log) {
     basis <- cbind(basis, log(x))
@@ -800,6 +938,7 @@ EvaluateC0SBasis<-function(object,x,intercept=TRUE, ...) {
 setGeneric("evaluate",function(object, x,...)standardGeneric("evaluate"))
 setMethod("evaluate",signature("BSplineBasis","numeric"),function(object, x, ...)EvaluateBBasis(object=object, x=x, ...))
 setMethod("evaluate",signature("MSplineBasis","numeric"),function(object, x, ...)EvaluateMBasis(object=object, x=x, ...))
+setMethod("evaluate",signature("LEMSplineBasis","numeric"),function(object, x, ...)EvaluateLEMBasis(object=object, x=x, ...))
 setMethod("evaluate",signature("TPSplineBasis","numeric"),function(object, x, ...)EvaluateTPBasis(object=object, x=x, ...))
 setMethod("evaluate",signature("TPRSplineBasis","numeric"),function(object, x, ...)EvaluateTPBasis(object=object, x=x, ref=object@ref, ...))
 setMethod("evaluate",signature("C0BSplineBasis","numeric"),function(object, x, ...)EvaluateC0SBasis(object=object, x=x, ...))
@@ -807,6 +946,7 @@ setMethod("evaluate",signature("C0BSplineBasis","numeric"),function(object, x, .
 setGeneric("fevaluate",function(object, x,...)standardGeneric("fevaluate"))
 setMethod("fevaluate",signature("BSplineBasis","numeric"),function(object, x, ...)EvaluateBBasis(object=object, x=x, ...))
 setMethod("fevaluate",signature("MSplineBasis","numeric"),function(object, x, ...)FEvaluateMBasis(object=object, x=x, ...))
+setMethod("fevaluate",signature("LEMSplineBasis","numeric"),function(object, x, ...)FEvaluateLEMBasis(object=object, x=x, ...))
 setMethod("fevaluate",signature("TPSplineBasis","numeric"),function(object, x, ...)FEvaluateTPBasis(object=object, x=x, ...))
 setMethod("fevaluate",signature("TPRSplineBasis","numeric"),function(object, x, ...)EvaluateTPBasis(object=object, x=x, ref=object@ref, ...))
 setMethod("fevaluate",signature("C0BSplineBasis","numeric"),function(object, x, ...)EvaluateC0SBasis(object=object, x=x, ...))
@@ -823,9 +963,29 @@ EvaluateLCMBasis<-function(object, x, beta, intercept=TRUE, outer.ok=TRUE, ...) 
   M<-object@Matrices
   knots<-object@knots
   order<-object@degree+1
-  cl <- .Call("eval_lc_spline_basis", as.double(knots), as.integer(order), M,
-                 as.integer(intercept), as.double(x), as.double(beta), as.integer(outer.ok),
-                 PACKAGE="flexrsurv")
+  cl <- .Call(C_eval_lc_spline_basis, as.double(knots), as.integer(order), M,
+                 as.integer(intercept), as.double(x), as.double(beta), as.integer(outer.ok))
+
+  if (object@log) {
+    return(cl + log(x) * beta[length(beta)])
+  }
+ else {
+   return(cl)
+ }
+
+}
+
+# linearly extended  M-spline
+EvaluateLCLEMBasis<-function(object, x, beta, intercept=TRUE, outer.ok=TRUE, ...) {
+  stopifnot(is.numeric(x))
+  dots<-list(...)
+  M<-object@Matrices
+  linexinf<-object@linexinf
+  linexsup<-object@linexsup
+  knots<-object@knots
+  order<-object@degree+1
+  cl <- .Call(C_eval_lc_linex_spline_basis, as.double(knots), as.integer(order), M, linexinf, linexsup,
+                 as.integer(intercept), as.double(x), as.double(beta), as.integer(outer.ok))
 
   if (object@log) {
     return(cl + log(x) * beta[length(beta)])
@@ -858,16 +1018,14 @@ EvaluateLCTPBasis<-function(object, x, beta, intercept=TRUE, ref=NULL, outer.ok=
   degrees <- object@degrees
   coef <- object@coef
   if(object@type == "increasing"){
-    cl <- .Call("eval_lc_trunc_power_increasing_basis", as.double(knots), as.double(replicates),
+    cl <- .Call(C_eval_lc_trunc_power_increasing_basis, as.double(knots), as.double(replicates),
                    as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
-                   as.double(x), as.double(beta), as.integer(outer.ok),
-                   PACKAGE="flexrsurv")
+                   as.double(x), as.double(beta), as.integer(outer.ok))
   }
   else {
-  cl <- .Call("eval_lc_trunc_power_basis", as.double(knots), as.double(replicates),
+  cl <- .Call(C_eval_lc_trunc_power_basis, as.double(knots), as.double(replicates),
                  as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
-                 as.double(x), as.double(beta), as.integer(outer.ok),
-                 PACKAGE="flexrsurv")
+                 as.double(x), as.double(beta), as.integer(outer.ok))
   }
   if (object@log) {
     return(cl + log(x) * beta[length(beta)])
@@ -883,6 +1041,7 @@ EvaluateLCTPBasis<-function(object, x, beta, intercept=TRUE, ref=NULL, outer.ok=
 
 setGeneric("evaluatelc",function(object, x, beta,...)standardGeneric("evaluatelc"))
 setMethod("evaluatelc",signature("MSplineBasis","numeric","numeric"),function(object, x, beta, ...)EvaluateLCMBasis(object=object, x=x, beta=beta, ...))
+setMethod("evaluatelc",signature("LEMSplineBasis","numeric","numeric"),function(object, x, beta, ...)EvaluateLCLEMBasis(object=object, x=x, beta=beta, ...))
 setMethod("evaluatelc",signature("TPSplineBasis","numeric","numeric"),function(object, x, beta, ...)EvaluateLCTPBasis(object=object, x=x, beta=beta, ...))
 
 
@@ -900,8 +1059,19 @@ PredictMBasisBeta <- function(object=object, x=x, beta=beta, intercept=TRUE, out
   }
 }
 
+# LEMSplineParam
+# computes f(x) = sum_i beta_i b_i(x)
+PredictLEMBasisBeta <- function(object=object, x=x, beta=beta, intercept=TRUE, outer.ok=TRUE, ...){
+  if(intercept){
+    predict(object * beta, x, intercept=TRUE, ...)
+  }
+  else {
+    predict(object * c(0, beta), x,  intercept=FALSE, ...)
+  }
+}
+
 # computes f(x) = sum_i B_i(x)
-# assuming B_i = beta_i * beta_i
+# assuming B_i = beta_i * b_i
 predict.MSplineBasis <- function(object=object, x=x, intercept=TRUE, outer.ok=TRUE, ...){
   stopifnot(is.numeric(x))
 
@@ -918,9 +1088,71 @@ predict.MSplineBasis <- function(object=object, x=x, intercept=TRUE, outer.ok=TR
   M<-object@Matrices
   knots<-object@knots
   order<-object@degree+1
-  cl <- .Call("predict_spline_basis", as.double(knots), as.integer(order), M,
-                 as.integer(intercept), as.double(x), as.integer(outer.ok),
-                 PACKAGE="flexrsurv")
+  cl <- .Call(C_predict_spline_basis, as.double(knots), as.integer(order), M,
+                 as.integer(intercept), as.double(x), as.integer(outer.ok))
+
+  if (object@log) {
+    return(cl + log(x) * beta[length(beta)])
+  }
+ else {
+   return(cl)
+ }
+
+}
+
+# computes f(x) = sum_i B_i(x)
+# assuming B_i = beta_i * b_i
+slowpredict.MSplineBasis <- function(object=object, x=x, intercept=TRUE, outer.ok=TRUE, ...){
+  stopifnot(is.numeric(x))
+
+#  if(!is.null(beta)){
+#    if(intercept){
+#      object <- object * beta
+#    }
+#    else {
+#      object <- object * c(0, beta)
+#    }
+#  }
+
+  dots<-list(...)
+  M<-object@Matrices
+  knots<-object@knots
+  order<-object@degree+1
+  cl <- .Call(C_slow_predict_spline_basis, as.double(knots), as.integer(order), M,
+                 as.integer(intercept), as.double(x), as.integer(outer.ok))
+
+  if (object@log) {
+    return(cl + log(x) * beta[length(beta)])
+  }
+ else {
+   return(cl)
+ }
+
+}
+
+# computes f(x) = sum_i B_i(x)
+# assuming B_i = beta_i * b_i
+predict.LEMSplineBasis <- function(object=object, x=x, intercept=TRUE, outer.ok=TRUE, ...){
+  stopifnot(is.numeric(x))
+
+#  if(!is.null(beta)){
+#    if(intercept){
+#      object <- object * beta
+#    }
+#    else {
+#      object <- object * c(0, beta)
+#    }
+#  }
+
+  dots<-list(...)
+  M<-object@Matrices
+  linexinf<-object@linexinf
+  linexsup<-object@linexsup
+  orderextrapol <- object@orderextrapol
+  knots<-object@knots
+  order<-object@degree+1
+  cl <- .Call(C_predict_linex_spline_basis, as.double(knots), as.integer(order), M, linexinf, linexsup,
+                 as.integer(orderextrapol), as.integer(intercept), as.double(x), as.integer(outer.ok))
 
   if (object@log) {
     return(cl + log(x) * beta[length(beta)])
@@ -975,16 +1207,14 @@ predict.TPSplineBasis <- function(object=object, x=x, beta=NULL, intercept=TRUE,
   degrees <- object@degrees
   coef <- object@coef
   if(object@type == "increasing"){
-    cl <- .Call("predict_trunc_power_increasing_basis", as.double(knots), as.double(replicates),
+    cl <- .Call(C_predict_trunc_power_increasing_basis, as.double(knots), as.double(replicates),
                    as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
-                   as.double(x), as.integer(outer.ok),
-                   PACKAGE="flexrsurv")
+                   as.double(x), as.integer(outer.ok))
   }
   else {
-  cl <- .Call("predict_trunc_power_basis", as.double(knots), as.double(replicates),
+  cl <- .Call(C_predict_trunc_power_basis, as.double(knots), as.double(replicates),
                  as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
-                 as.double(x), as.integer(outer.ok),
-                 PACKAGE="flexrsurv")
+                 as.double(x), as.integer(outer.ok))
   }
   if (object@log) {
     return(cl + log(x) * beta[length(beta)])
@@ -998,11 +1228,14 @@ predict.TPSplineBasis <- function(object=object, x=x, beta=NULL, intercept=TRUE,
 
 setGeneric("predictSpline",function(object, x, beta,...)standardGeneric("predictSpline"))
 setMethod("predictSpline",signature(object="MSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.MSplineBasis(object=object, x=x,  ...))
+setMethod("predictSpline",signature(object="LEMSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.LEMSplineBasis(object=object, x=x,  ...))
 setMethod("predictSpline",signature(object="TPSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.TPSplineBasis(object=object, x=x,  ...))
 
 #setMethod("predict",signature("MSplineBasis","numeric","numeric"),function(object, x, beta, ...)PredictMBasisBeta(object=object, x=x, beta=beta, ...))
 #setMethod("predict",signature("TPSplineBasis","numeric","numeric"),function(object, x, beta, ...)PredictTPBasisBeta(object=object, x=x, beta=beta, ...))
 
+setGeneric("slowpredictSpline",function(object, x, beta,...)standardGeneric("slowpredictSpline"))
+setMethod("slowpredictSpline",signature(object="MSplineBasis",x="numeric", beta="missing"),function(object, x, ...)slowpredict.MSplineBasis(object=object, x=x,  ...))
 
 ######################################################################
 #  integrate 
@@ -1042,6 +1275,31 @@ integrate.MSplineBasis<-function(object){
 
 # compute values of integrated basis
 IntegrateMBasis<-function(object,x,intercept=TRUE, xname=NULL, outer.ok=TRUE, ...) {
+  stopifnot(is.numeric(x))
+  if (object@log) {
+    stop("no method 'integrate' for MSplineBasis with additional log basis" )
+  }
+  else {
+    evaluate(integrate(object), x=x, intercept=intercept, outer.ok=outer.ok, ...)
+  }
+}
+
+# LEMSplinebasis
+# define parameters for integrated Spline Basis
+integrate.LEMSplineBasis<-function(object){
+  SB <- orthogonalsplinebasis::integrate(object@SplineBasis)
+  
+  no <- new("LEMSplineBasis", knots=SB@knots, min=object@min, max=object@max,
+      degree=as.integer(SB@order-1), nbases=as.integer(dim(SB@Matrices)[2]), Matrices=SB@Matrices, SplineBasis=SB, log=FALSE)
+  linexinf <- rbind(rep(0, object@nbases), diag(1/(1:(object@degree+1)))%*%object@linexinf)
+  linexsup <- rbind(evaluate(no, object@knots[length(object@knots)]), diag(1/(1:(object@degree+1)))%*%object@linexsup)
+  no@linexinf <- linexinf
+  no@linexsup <- linexsup
+  no
+}
+
+# compute values of integrated basis
+IntegrateLEMBasis<-function(object,x,intercept=TRUE, xname=NULL, outer.ok=TRUE, ...) {
   stopifnot(is.numeric(x))
   if (object@log) {
     stop("no method 'integrate' for MSplineBasis with additional log basis" )
@@ -1303,12 +1561,44 @@ FIntegrateTPBasis<-function(object,x,intercept=TRUE, ref=NULL, xmin=-Inf, xmax=+
 
 setGeneric("integrate",function(object, x,...)standardGeneric("integrate"))
 setMethod("integrate",signature("MSplineBasis", "missing"),integrate.MSplineBasis)
+setMethod("integrate",signature("LEMSplineBasis", "missing"),integrate.LEMSplineBasis)
 setMethod("integrate",signature("TPSplineBasis", "missing"),integrate.TPSplineBasis)
 
 setMethod("integrate",signature("MSplineBasis","numeric"),function(object, x, ...)IntegrateMBasis(object=object, x=x, ...))
+setMethod("integrate",signature("LEMSplineBasis","numeric"),function(object, x, ...)IntegrateLEMBasis(object=object, x=x, ...))
 setMethod("integrate",signature("TPSplineBasis","numeric"),function(object, x, ...)FIntegrateTPBasis(object=object, x=x, ...))
 #setMethod("integrate",signature("TPRSplineBasis","numeric"),function(object, x, ...)IntegrateTPBasis(object=object, x=x, ref=object@ref, ...))
 #setMethod("integrate",signature("C0BSplineBasis","numeric"),function(object, x, ...)IntegrateC0SBasis(object=object, x=x, ...))
+
+
+
+######################################################################
+# deriv method
+# LEMSplinebasis
+# define parameters for derived Spline Basis
+deriv.LEMSplineBasis<-function(object){
+  SB <- orthogonalsplinebasis::deriv(object@SplineBasis)
+  
+  no <- new("LEMSplineBasis", knots=SB@knots, min=object@min, max=object@max,
+      degree=as.integer(SB@order-1), nbases=as.integer(dim(SB@Matrices)[2]), Matrices=SB@Matrices, SplineBasis=SB, log=FALSE)
+  
+  linexinf <- ((diag(0:object@degree))%*%object@linexinf)[-1,]
+  linexsup <- ((diag(0:object@degree))%*%object@linexsup)[-1,]
+  no@linexinf <- linexinf
+  no@linexsup <- linexsup
+  no
+}
+
+# compute values of integrated basis
+IntegrateLEMBasis<-function(object,x,intercept=TRUE, xname=NULL, outer.ok=TRUE, ...) {
+  stopifnot(is.numeric(x))
+  if (object@log) {
+    stop("no method 'integrate' for MSplineBasis with additional log basis" )
+  }
+  else {
+    evaluate(integrate(object), x=x, intercept=intercept, outer.ok=outer.ok, ...)
+  }
+}
 
 
 
@@ -1352,6 +1642,10 @@ setMethod("initcoef",
           )
 setMethod("initcoef",
           signature("MSplineBasis","integer"),
+          function(object, ncol, ...)InitCoefMBasis(object=object, ncol=ncol, ...)
+          )
+setMethod("initcoef",
+          signature("LEMSplineBasis","integer"),
           function(object, ncol, ...)InitCoefMBasis(object=object, ncol=ncol, ...)
           )
 setMethod("initcoef",
@@ -1420,7 +1714,7 @@ ExpandVCoefSBasis0<-function(object,ncol,coef, intercept=TRUE, xname=NULL, ...) 
 # operators
 
 
-# SplineBasis
+# SplineBasis, from package orthogonalsplinebasis
 Prod.S.n <- function(e1, e2) {
     d <- dim(e1@Matrices)
     le <- length(e2)
@@ -1541,6 +1835,67 @@ setMethod("-", signature(e1 = "numeric", e2 = "MSplineBasis"), Dif.n.MS)
 
 
 ######################################################################
+# LEMSplineBasis
+Prod.LEMS.n <- function(e1, e2) {
+    e1@SplineBasis <- e1@SplineBasis * e2
+    e1@Matrices <- e1@SplineBasis@Matrices
+    e1@linexinf <- e1@linexinf %*% diag(e2, ncol=e1@nbases, nrow=e1@nbases)
+    e1@linexsup <- e1@linexsup %*% diag(e2, ncol=e1@nbases, nrow=e1@nbases)
+    e1
+}
+setMethod("*", signature(e1 = "LEMSplineBasis", e2 = "numeric"), Prod.LEMS.n)
+
+Prod.n.LEMS <- function(e1, e2) {
+  e2 * e1
+}
+setMethod("*", signature(e1 ="numeric" , e2 = "LEMSplineBasis"), Prod.n.LEMS)
+
+
+Sum.LEMS.LEMS <- function(e1, e2) {
+    e1@SplineBasis <- e1@SplineBasis + e2@SplineBasis 
+    e1@Matrices <- e1@SplineBasis@Matrices
+    e1@linexinf <- e1@linexinf + e2@linexinf 
+    e1@linexsup <- e1@linexsup + e2@linexsup 
+
+    e1
+}
+setMethod("+", signature(e1 = "LEMSplineBasis", e2 = "LEMSplineBasis"), Sum.LEMS.LEMS)
+
+
+Sum.LEMS.n <- function(e1, e2) {
+    e1 + ( LEMSplineBasis2(allknots=e1@knots, degree=e1@degree, keep.duplicates=FALSE) * e2)
+}
+setMethod("+", signature(e1 = "LEMSplineBasis", e2 = "numeric"), Sum.LEMS.n)
+
+Sum.n.LEMS <- function(e1, e2) {
+  e2 + e1
+}
+setMethod("+", signature(e1 ="numeric" , e2 = "LEMSplineBasis"), Sum.n.LEMS)
+
+
+
+Dif.LEMS.LEMS <- function(e1, e2) {
+    e1@SplineBasis <- e1@SplineBasis - e2@SplineBasis 
+    e1@Matrices <- e1@SplineBasis@Matrices
+    e1@linexinf <- e1@linexinf - e2@linexinf 
+    e1@linexsup <- e1@linexsup - e2@linexsup 
+    e1
+}
+setMethod("-", signature(e1 = "LEMSplineBasis", e2 = "LEMSplineBasis"), Dif.LEMS.LEMS)
+
+Dif.LEMS.n <- function(e1, e2) {
+  e1 + ((-1) * e2)
+}
+setMethod("-", signature(e1 = "LEMSplineBasis", e2 = "numeric"), Dif.LEMS.n)
+
+Dif.n.LEMS <- function(e1, e2) {
+  ( e2 * (-1)) + e1
+}
+setMethod("-", signature(e1 = "numeric", e2 = "LEMSplineBasis"), Dif.n.LEMS)
+
+
+
+######################################################################
 # TPSplineBasis
 Prod.TPS.n <- function(e1, e2) {
     d <- length(e1@coef)
@@ -1593,7 +1948,7 @@ Sum.n.TPS <- function(e1, e2) {
 setMethod("+", signature(e1 ="numeric" , e2 = "TPSplineBasis"), Sum.n.TPS)
 
 
-Dif.S.S <- function(e1, e2) {
+Dif.TPS.TPS <- function(e1, e2) {
   if(e1@knots== e2@knots && e1@degree == e2@degree && e1@min == e2@min && e1@max == e2@max && e1@degrees == e2@degrees && e1@type == e2@type){
     e1@coef <- e1@coef - e1@coef 
     e1

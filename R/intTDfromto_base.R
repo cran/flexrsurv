@@ -22,7 +22,7 @@ intTDft_base_NC <- function(func=function(x) return(x), fromT, toT,
     # vector of evaluated t
     theT <- fromT[i] + (0:Nstep[i])*step[i]
     # matrix of the evaluated functions (nt row, nfunc col)
-    FF <- func(theT, i, ...)
+    FF <- func(theT, i, fromT=fromT, toT=toT, ...)
     TBase <- fevaluate(Spline, theT, intercept=TRUE)
     # weights 1 * nt matrix
     w<-intweightsfunc(Nstep[i])
@@ -61,7 +61,7 @@ intTDft_base2_NC <- function(func=function(x) return(x), fromT, toT,
     # evaluate spline basis at t - fromT
     TBase <- fevaluate(Spline, (0:Nstep[i])*step[i], intercept=TRUE)
     # matrix of the evaluated functions (nt row, nfunc col)
-    FF <- func(theT, i, ...)
+    FF <- func(theT, i, fromT=fromT, toT=toT, ...)
     # weights 1 * nt matrix
     w<-intweightsfunc(Nstep[i])
 
@@ -103,7 +103,7 @@ intTDft_base_NC_debug<- function(func=function(x) return(x),  fromT, toT,
     theT <- fromT[i] + (0:Nstep[i])*step[i]
     TBase <- fevaluate(Spline, theT, intercept=TRUE)
     # vector of the evaluated functions
-    FF <- func(theT, i, ...)
+    FF <- func(theT, i, fromT=fromT, toT=toT, ...)
     # weights
     w<-intweightsfunc(Nstep[i])
 
@@ -150,7 +150,7 @@ fastintTDft_base_GLM <- function(func=function(x) return(x), fromT, toT,
                   step@points[Nstep[i,1]:Nstep[i,2]] ,
                   Tpoints[i] )
                                         # vector of the evaluated functions
-        FF <- func(theT, i, ...)
+        FF <- func(theT, i, fromT=fromT, toT=toT, ...)
                                         # weights
       w<- c(step@cuts[Nstep[i,1]] - fromT[i],
             step@steps[Nstep[i,1]:Nstep[i,2]],
@@ -167,7 +167,7 @@ fastintTDft_base_GLM <- function(func=function(x) return(x), fromT, toT,
         theT <- c((step@cuts[Nstep[i,1]]+fromT[i])/2,
                   Tpoints[i] )
                                         # vector of the evaluated functions
-        FF <- func(theT, i, ...)
+        FF <- func(theT, i, fromT=fromT, toT=toT, ...)
                                         # weights
       w<- c(step@cuts[Nstep[i,1]] - fromT[i],
             toT[i]-step@cuts[Nstep[i,1]])
@@ -224,9 +224,10 @@ fastintTDft_base2_GLM <- function(func=function(x) return(x), fromT, toT,
                   step@points[Nstep[i,1]:Nstep[i,2]] ,
                   Tpoints[i] )
         #evaluated bases 
-    allTBase <- fevaluate(Spline, theT - fromT, intercept=TRUE)
+    allTBase <- fevaluate(Spline, theT - fromT[i], intercept=TRUE)
                                         # vector of the evaluated functions
-        FF <- func(theT, i, ...)
+        FF <- func(theT, i, fromT=fromT, toT=toT, ...)
+
                                         # weights
       w<- c(step@cuts[Nstep[i,1]] - fromT[i],
             step@steps[Nstep[i,1]:Nstep[i,2]],
@@ -240,9 +241,9 @@ fastintTDft_base2_GLM <- function(func=function(x) return(x), fromT, toT,
         theT <- c((step@cuts[Nstep[i,1]]+fromT[i])/2,
                   Tpoints[i] )
         #evaluated bases 
-        allTBase <- fevaluate(Spline, theT - fromT, intercept=TRUE)
+        allTBase <- fevaluate(Spline, theT - fromT[i], intercept=TRUE)
                                         # vector of the evaluated functions
-        FF <- func(theT, i, ...)
+        FF <- func(theT, i, fromT=fromT, toT=toT, ...)
                                         # weights
       w<- c(step@cuts[Nstep[i,1]] - fromT[i],
             toT[i]-step@cuts[Nstep[i,1]])

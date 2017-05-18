@@ -32,6 +32,17 @@
 \alias{-,SplineBasis,numeric-method}
 \alias{-,SplineBasis,SplineBasis-method}
 \alias{-,TPSplineBasis,numeric-method}
+
+\alias{*,LEMSplineBasis,numeric-method}
+\alias{*,numeric,LEMSplineBasis-method}
+\alias{+,LEMSplineBasis,LEMSplineBasis-method}
+\alias{+,LEMSplineBasis,numeric-method}
+\alias{+,numeric,LEMSplineBasis-method}
+\alias{-,LEMSplineBasis,LEMSplineBasis-method}
+\alias{-,LEMSplineBasis,numeric-method}
+\alias{-,numeric,LEMSplineBasis-method}
+
+
 \title{
 Internal Objects and functions for the \pkg{flexrsurv } package
 }

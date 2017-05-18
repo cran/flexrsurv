@@ -22,7 +22,7 @@ flexrsurv.glm.fit <- function(formula, data,
   linkfun  <- function(mu){
 
     #log(mu - data$exp_nbevent)
-    ifelse(mu < data$exp_nbevent,  - log(.Machine$double.xmax)/2, log(mu - data$exp_nbevent))
+    ifelse(mu - data$exp_nbevent > 0, log(mu - data$exp_nbevent),  - log(.Machine$double.xmax)/2)
   }
   # inverse of the link function
   linkinv  <- function(eta){

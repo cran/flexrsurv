@@ -35,6 +35,11 @@
 #define _(String) (String)
 #endif
 
+#ifndef EVAL_SPLINEPARAM
+#include "SplineParam.h"
+#endif
+
+
 SEXP eval_trunc_power_basis(SEXP knots, SEXP replicates, SEXP min, SEXP max, SEXP order, 
 							SEXP coefs, SEXP degrees, SEXP intercept, SEXP xvals, SEXP outerok)
 {
@@ -100,45 +105,8 @@ xvals : vector values at which bases are computed
 	}
 
 	for(i = 0; i < nx; i++) {
-		if (ISNAN(rxvals[i])) {
-			for (j = 0; j < nbases -firstbasis; j++) {
-				rbases[i +nx * j] = R_NaN;
-			}
-		} else {
-			if (rxvals[i]< rmin || rxvals[i] > rmax) {
-				for (j = 0; j < nbases - firstbasis; j++) {
-					rbases[i + nx * j] = outer_val;
-				}
-			} else {
-				theinterval= 1;
-				mfl = 0;
-				/* find the interval within interior knots (which exclude boundaries(min max)) of rxvals[i], 
-				   rightmost_close=TRUE, all_inside = FALSE 
-				   if theinterval == 0, xvals[i]<knots[0] first interior knot
-				   if theinterval == nknots , xvals[i]>knots[nknots] last interior knot	   
-				*/ 
-				theinterval = findInterval(rknots, nknots, rxvals[i], 1, 0 , theinterval, &mfl );
-				/* the first theorder bases are powers of xvals */
-				ibase=0;
-				for ( j = firstbasis; j < theorder ; j++) {
-					rbases[i + nx* ibase] = pow(rxvals[i], j)*rcoefs[j];
-					ibase++;
-				}  
-/*				ibaseb=theorder-firstbasis; */
-				icoef=theorder;
-				for (k = 0; k < theinterval; k++) {
-					for (j = rreplicates[k] ; j > 0 ; j--) {
-						rbases[i + nx* ibase] = pow((rxvals[i] - rknots[k]), theorder-j)*rcoefs[icoef];
-						ibase++;
-						icoef++;
-					}
-				}
-				while(ibase < nbases - firstbasis) {
-					rbases[i + nx* ibase] = 0.0;
-					ibase++;
-				}
-			} 
-		}
+		EVALUATE_one_trunc_power_basis (rxvals[i], rbases, i + nx *)   ;
+
 	}
 	unprotect(11);
 	return(bases);
@@ -219,65 +187,7 @@ xvals : vector values at which bases are computed
 	}
 
 	for(i = 0; i < nx; i++) {
-		if (ISNAN(rxvals[i])) {
-			for (j = 0; j < nbases -firstbasis; j++) {
-				rbases[i +nx * j] = R_NaN;
-			}
-		} else {
-			if (rxvals[i]< rmin || rxvals[i] > rmax) {
-				for (j = 0; j < nbases - firstbasis; j++) {
-					rbases[i + nx * j] = outer_val;
-				}
-			} else {
-				theinterval= 1;
-				mfl = 0;
-           /* find the interval within interior knots (which exclude boundaries(min max)) of rxvals[i], 
-	      rightmost_close=TRUE, all_inside = FALSE 
-	      if theinterval == 0, xvals[i]<knots[0] first interior knot
-	      if theinterval == nknots , xvals[i]>knots[nknots] last interior knot	   
-	   */ 
-				theinterval = findInterval(rknots, nknots, rxvals[i], 1, 0 , theinterval, &mfl );
-				/* the first theorder bases are powers of xvals */
-				ibase=0;
-				for ( j = firstbasis; j < theorder ; j++) {
-					rbases[i + nx* ibase] = pow(rxvals[i], j)*rcoefs[j];
-					ibase++;
-				}  
-/*				ibaseb=theorder-firstbasis; */
-				icoef=theorder;
-				for (k = 0; k < nknots; k++) {
-					if( rknots[k] < 0 ){
-						if( theinterval <= k ){
-							for (j = rreplicates[k]; j > 0 ; j--) {
-								rbases[i + nx* ibase] = - pow((rknots[k] - rxvals[i]), theorder-j)*rcoefs[icoef];
-								ibase++;
-								icoef++;
-							}
-						} else {
-							for (j = rreplicates[k]; j > 0 ; j--) {
-								rbases[i + nx* ibase] = 0.0;
-								ibase++;
-								icoef++;
-							}	
-						}
-					} else {
-						if( theinterval > k ){
-							for (j = rreplicates[k]; j > 0 ; j--) {
-								rbases[i + nx* ibase] = pow((rxvals[i] - rknots[k]), theorder-j)*rcoefs[icoef];
-								ibase++;
-								icoef++;
-							}
-						} else {
-							for (j = rreplicates[k]; j > 0 ; j--) {
-								rbases[i + nx* ibase] = 0.0;
-								ibase++;
-								icoef++;
-							}	
-						}
-					}
-				}
-			} 
-		}
+		EVALUATE_one_trunc_power_increasing_basis (rxvals[i], rbases, i + nx *)   ;
 	}
 	
 	unprotect(11);

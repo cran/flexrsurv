@@ -48,7 +48,8 @@ flexrsurv.glmiterative.fit <- function(formula, data,
   #----------------------------------------------------------------------------------------
   # link function
   linkfun  <- function(mu){
-    log(mu - data$exp_nbevent)
+    #log(mu - data$exp_nbevent)
+    ifelse(mu > data$exp_nbevent, log(mu - data$exp_nbevent),  - log(.Machine$double.xmax)/2)
   }
   # inverse of the link function
   linkinv  <- function(eta){
@@ -157,8 +158,9 @@ flexrsurv.glmiterative.fit <- function(formula, data,
   coefnames <- vector("list", n)
 
   if(length(index.NPHNLL) >0){
-    for (i in attr(Terms, "specials")["NPHNLL"]){
-        thecall <-  match.call(NPHNLL, attr(Terms,"variables")[[i+1]])
+    for (i in attr(Terms, "specials")[["NPHNLL"]]){
+        thecall0 <-  attr(Terms,"variables")[[i+1]]
+        thecall <-  match.call(NPHNLL, thecall0)
         indxterm <- variable2term(i, Terms)
         xname <- as.character(thecall[[2]])
         tname <- as.character(thecall[[3]])

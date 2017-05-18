@@ -178,6 +178,11 @@ The model \code{method=="additive"} assumes effects as explained in Remontet et 
 	\item{informationMatrix}{
 		estimated information matrix
 	}
+	\item{bhlink}{
+          the linkk of baseline hazard:
+	  if \code{"identity"} baseline = sum g0_i b_i(t);
+	  if \code{"log"} log(baseline) = sum g0_i b_i(t); 
+	}
 	\item{init}{
           vector of the starting values supplied
 	}
@@ -185,7 +190,7 @@ The model \code{method=="additive"} assumes effects as explained in Remontet et 
           logical, Was the optimlizer algorithm judged to have converged? 
 	}
 	\item{linear.predictors}{
-		the linear fit on link scale
+		the linear fit on link scale (not including the baseline hazard term if \code{bhlink = "identity"})
 	}
 	\item{fitted.values}{
 		the estimated value of the hazard rate at each event time, obtained by transforming the linear predictors by the inverse of the link function
@@ -226,7 +231,7 @@ The model \code{method=="additive"} assumes effects as explained in Remontet et 
 }
 
 \references{
-    Mahboubi, A., M. Abrahamowicz, et al. (2011). "Flexible modeling of the effects of continuous prognostic factors in relative survival." Stat Med 30(12): 1351-1365. \doi{DOI:10.1002/sim.4208}
+    Mahboubi, A., M. Abrahamowicz, et al. (2011). "Flexible modeling of the effects of continuous prognostic factors in relative survival." Stat Med 30(12): 1351-1365. \doi{10.1002/sim.4208}
 
     Remontet, L., N. Bossard, et al. (2007). "An overall strategy based on regression models to estimate relative survival and model the effects of prognostic factors in cancer survival studies." Stat Med 26(10): 2214-2228. \doi{10.1002/sim.2656}
 
@@ -248,12 +253,14 @@ The model \code{method=="additive"} assumes effects as explained in Remontet et 
 
 # data from package relsurv
 data(rdata, package="relsurv")
+
 # rate table from package relsurv
 data(slopop, package="relsurv")
 
-# get the death rate from slopop for rdata
-rdata$iage <- findInterval(rdata$age*365.24, attr(slopop, "cutpoints")[[1]])
-rdata$iyear <- findInterval(rdata$year, attr(slopop, "cutpoints")[[2]])
+
+# get the death rate at event (or end of followup) from slopop for rdata
+rdata$iage <- findInterval(rdata$age*365.24+rdata$time, attr(slopop, "cutpoints")[[1]])
+rdata$iyear <- findInterval(rdata$year+rdata$time, attr(slopop, "cutpoints")[[2]])
 therate <- rep(-1, dim(rdata)[1])
 for( i in 1:dim(rdata)[1]){
   therate[i] <- slopop[rdata$iage[i], rdata$iyear[i], rdata$sex[i]]
@@ -263,11 +270,27 @@ rdata$slorate <- therate
 
 # change sex coding
 rdata$sex01 <- rdata$sex -1
-# centering age
-rdata$agec <- rdata$age- 60
 
 # fit a relative survival model with a non linear effect of age
-fit <- flexrsurv(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3), 
+fit <- flexrsurv(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
+                                           Boundary.knots = c(24, 95)), 
+                 rate=slorate, data=rdata,
+                 knots.Bh=1850,  # one interior knot at 5 years
+                 degree.Bh=3,
+                 Max_T=5400,
+                 Spline = "b-spline",
+                 initbyglm=TRUE,
+                 initbands=seq(0, 5400, 100), 
+                 int_meth= "BANDS",
+                 bands=seq(0, 5400, 50)
+                 )
+summary(fit)
+
+\dontrun{
+# fit a relative survival model with a non linear & non proportional effect of age
+fit2 <- flexrsurv(Surv(time,cens)~sex01+NPHNLL(age, time, Knots=60,
+                                               Degree=3,
+                                               Knots.t = 1850, Degree.t = 3), 
                  rate=slorate, data=rdata,
                  knots.Bh=1850,  # one interior knot at 5 years
                  degree.Bh=3,
@@ -276,8 +299,8 @@ fit <- flexrsurv(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3),
                  int_meth= "BOOLE",
                  step=50
                  )
-summary(fit, correlation=TRUE)
-
+summary(fit2, correlation=TRUE)
+}
 }
 
 %
