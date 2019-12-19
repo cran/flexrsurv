@@ -12,7 +12,8 @@ flexrsurv.ll <- function(formula=formula(data),
                          rate=NULL, 
                          weights=NULL,
                          na.action=NULL, 
-                         int_meth=c("CAV_SIM", "SIM_3_8", "BOOLE", "GLM", "BANDS"),
+                         int_meth=c("GL", "CAV_SIM", "SIM_3_8", "BOOLE", "GLM", "BANDS"),
+                         npoints=20,              
                          stept=NULL,              
                          bands=NULL,
                          init=NULL,
@@ -115,13 +116,13 @@ if( debug > 10000){
 
 if(Spline=="b-spline"){
   
-  Spline_t0 <- MSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
+  Spline_t0 <- BSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
                             degree=degree.Bh,
                             keep.duplicates=TRUE,
                             log=log.Bh)
 
   # no log basis for NPH and NPHNLL and td and nltd effects
-  Spline_t<- MSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
+  Spline_t<- BSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
                           degree=degree.Bh,
                           keep.duplicates=TRUE,
                             log=FALSE)
@@ -247,6 +248,11 @@ listinit<- list(gamma0 = init[des$coef2param$gamma0],
           bands <- default_bands(Spline_t)
         }
         method <- list(int_meth=int_meth, bands=bands, optim_meth=optim_meth)
+      } else if( int_meth == "GL"){
+        if (is.null(npoints)){
+          npoints <- 20
+        }
+        method <- list(int_meth="Gauss-Legendre", npoints=npoints, optim_meth=optim_meth)
       } else {
         if (is.null(stept)){
           stept <- Max_T /500

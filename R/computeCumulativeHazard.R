@@ -3,12 +3,12 @@
                       step, Nstep,
                       intTD=intTD_NC, intweightsfunc=intweights_CAV_SIM,
                       nT0basis,
-                      Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                      Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                       ialpha0, nX0,
                       ibeta0, nX,
                       ialpha, ibeta,                             
                       nTbasis,
-                      Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                      Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                       Intercept_t_NPH=rep(TRUE, nX), 
                       debug=FALSE,  ...){
   # compute the cumulative hazard frm 0 to Y[,1]
@@ -86,14 +86,14 @@
   }
   
   if(nX + nZ) {
-    NPHterm <- intTD(rateTD_gamma0alphabeta, Y[,1], fail=Y[,2],
+    NPHterm <- intTD(rateTD_gamma0alphabeta, intTo=Y[,1], intToStatus=Y[,2],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
   } else {
-    NPHterm <- intTD(rateTD_gamma0, Y[,1], fail=Y[,2], 
+    NPHterm <- intTD(rateTD_gamma0, intTo=Y[,1], intToStatus=Y[,2], 
                      step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis],
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
@@ -115,12 +115,12 @@ ret
                       step, Nstep,
                       intTD=intTD_NC, intweightsfunc=intweights_CAV_SIM,
                       nT0basis,
-                      Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                      Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                       ialpha0, nX0,
                       ibeta0, nX,
                       ialpha, ibeta,                             
                       nTbasis,
-                      Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                      Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                       Intercept_t_NPH=rep(TRUE, nX), 
                       debug=FALSE,  ...){
   # compute the cumulative hazard frm 0 to Y[,1]
@@ -198,14 +198,14 @@ ret
   }
   
   if(nX + nZ) {
-    NPHterm <- intTD(rateTD_bh_alphabeta, Y[,1], fail=Y[,2],
+    NPHterm <- intTD(rateTD_bh_alphabeta, intTo=Y[,1], intToStatus=Y[,2],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
   } else {
-#    NPHterm <- intTD(rateTD_bh_gamma0, Y[,1], fail=Y[,2], 
+#    NPHterm <- intTD(rateTD_bh_gamma0, intTo=Y[,1], intToStatus=Y[,2], 
 #                     step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
 #                     gamma0=GA0B0AB[1:nT0basis],
 #                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
@@ -229,12 +229,12 @@ ret
                       step, Nstep,
                       intTD=intTDft_NC, intweightsfunc=intweights_CAV_SIM,
                       nT0basis,
-                      Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                      Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                       ialpha0, nX0,
                       ibeta0, nX,
                       ialpha, ibeta,                             
                       nTbasis,
-                      Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                      Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                       Intercept_t_NPH=rep(TRUE, nX), 
                       debug=FALSE,  ...){
   # compute the cumulative hazard frm Y[,1] to Y[,2]
@@ -314,14 +314,14 @@ ret
   }
   
   if(nX + nZ) {
-    NPHterm <- intTD(rateTD_gamma0alphabeta, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+    NPHterm <- intTD(rateTD_gamma0alphabeta, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
   } else {
-    NPHterm <- intTD(rateTD_gamma0, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+    NPHterm <- intTD(rateTD_gamma0, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
                      step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis],
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
@@ -340,12 +340,12 @@ ret
                       step, Nstep,
                       intTD=intTDft_NC, intweightsfunc=intweights_CAV_SIM,
                       nT0basis,
-                      Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                      Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                       ialpha0, nX0,
                       ibeta0, nX,
                       ialpha, ibeta,                             
                       nTbasis,
-                      Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                      Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                       Intercept_t_NPH=rep(TRUE, nX), 
                       debug=FALSE,  ...){
   # compute the cumulative hazard frm Y[,1] to Y[,2]
@@ -423,14 +423,14 @@ ret
   }
   
   if(nX + nZ) {
-    NPHterm <- intTD(rateTD_bh_alphabeta, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+    NPHterm <- intTD(rateTD_bh_alphabeta, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
   } else {
-#    NPHterm <- intTD(rateTD_gamma0_bh, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+#    NPHterm <- intTD(rateTD_gamma0_bh, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
 #                     step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
 #                     gamma0=GA0B0AB[1:nT0basis],
 #                     Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
@@ -451,19 +451,19 @@ ret
 # with WCE effect
 # when dim(Y)==3, Y[,1] is beginTime, Y[,2] is endTime, Y[,3] is event
 .computeCumulativeHazard_fromto_GA0B0ABE0<-function(GA0B0ABE0, Y, X0, X, Z,  W, 
-                                                    Id, FirstId,
+                                                    Id, FirstId, LastId,
                                                     step, Nstep,
                                                     intTD=intTDft_NC, intweightsfunc=intweights_CAV_SIM,
                                                     nT0basis,
-                                                    Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                                                    Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                                                     ialpha0, nX0,
                                                     ibeta0, nX,
                                                     ialpha, ibeta,                             
                                                     nTbasis,
                                                     ieta0, iWbeg, iWend, nW, 
-                                                    Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                                                    Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                                                     Intercept_t_NPH=rep(TRUE, nX), 
-                                                    ISpline_W =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                                                    ISpline_W =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                                                     Intercept_W=TRUE,
                                                     debug=FALSE,  ...){
   # compute the cumulative hazard frm Y[,1] to Y[,2]
@@ -486,7 +486,7 @@ ret
   # Y : object of class Surv but the matrix has 4 columns :
   # Y[,1] beginning(1) , fromT
   # Y[,2] end(2), toT,
-  # Y[,3] status(3) fail
+  # Y[,3] status(3) intToStatus
   # Y[,4] end of followup(4) 
   #     end of followup is assumed constant by Id
   # X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
@@ -565,18 +565,20 @@ ret
       }
     }
     if(nX + nZ) {
-      NPHterm <- intTD(rateTD_gamma0alphabetaeta0, fromT=Y[,1], toT=Y[,2], fail=Y[,3], FirstId=FirstId,
+      NPHterm <- intTD(rateTD_gamma0alphabetaeta0, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
                        step=step, Nstep=Nstep,
                        intweightsfunc=intweightsfunc, 
+                       fromT=Y[,1], toT=Y[,2], FirstId=FirstId, LastId=LastId,
                        gamma0=GA0B0ABE0[1:nT0basis], Zalphabeta=Zalphabeta,
                        nW = nW, W = W, eta0=GA0B0ABE0[ieta0], iWbeg=iWbeg, iWend=iWend,
                        Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                        Spline_t = Spline_t, Intercept_t=TRUE,
                        ISpline_W = IS_W)
     } else {
-      NPHterm <- intTD(rateTD_gamma0eta0, fromT=Y[,1], toT=Y[,2], fail=Y[,3], FirstId=FirstId,
+      NPHterm <- intTD(rateTD_gamma0eta0, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
                        step=step, Nstep=Nstep,
                        intweightsfunc=intweightsfunc, 
+                       fromT=Y[,1], toT=Y[,2], FirstId=FirstId, LastId=LastId,
                        nW = nW, W = W, eta0=GA0B0ABE0[ieta0], iWbeg=iWbeg, iWend=iWend,
                        Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                        ISpline_W = IS_W)
@@ -585,14 +587,14 @@ ret
   else {
     # no VCE effect, same NPH term than ll_flexrsurv_fromto_GA0B0ABE0
     if(nX + nZ) {
-      NPHterm <- intTD(rateTD_gamma0alphabeta, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+      NPHterm <- intTD(rateTD_gamma0alphabeta,  intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
                        step=step, Nstep=Nstep,
                        intweightsfunc=intweightsfunc, 
                        gamma0=GA0B0ABE0[1:nT0basis], Zalphabeta=Zalphabeta, 
                        Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                        Spline_t = Spline_t, Intercept_t=TRUE)
     } else {
-      NPHterm <- intTD(rateTD_gamma0, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+      NPHterm <- intTD(rateTD_gamma0,  intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
                        step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                        gamma0=GA0B0ABE0[1:nT0basis],
                        Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)

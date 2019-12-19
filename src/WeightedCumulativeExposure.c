@@ -35,7 +35,7 @@
 #include "SplineParam.h"
 #endif
 
-SEXP eval_wce_spline_basis(SEXP knots, SEXP order, SEXP Matrices, SEXP intercept, 
+SEXP predict_wce_spline_basis(SEXP knots, SEXP order, SEXP Matrices, SEXP intercept, 
 			   SEXP w, SEXP fromT, SEXP FirstId, SEXP LastId, 
 			   SEXP xvals, SEXP xId,  
 			   SEXP outerok)
@@ -49,7 +49,7 @@ Matrices : a vectorized array of dim order X nbases X number_of_intervales(knots
 !!!! The Matrix is scaled by the parameters of the spline function  !!!
 order : order of the splines (see package orthogonalsplinbasis
 intercept : wehtehr first basis is included
-*  w,fromT, FirstId, LastId, Id : vectors defining the exposure profiles if several individual: 
+*  w,fromT, FirstId, LastId: vectors defining the exposure profiles if several individual: 
 *                     same lenght, fromT,  increasing by Id, w are the increments
 *                     fromT[FirstId] is the first time of each individual
 *                     fromT[LastId] is the last enter time of each individual
@@ -60,7 +60,7 @@ intercept : wehtehr first basis is included
 *             (ie that xvals <= toT[last])  
  */
 	R_len_t nknots, theorder, nbases, nintervals, firstbasis;
-	R_len_t i, j, k, nw, nt, nx, istart, ilast, ixId, nxId, nFId, oo;
+	R_len_t i, j, k, nw, nt, nx, istart, ilast, ixId, nxId, nFId, oo, ii;
 	int *rxId, *rFirstId, *rLastId;
 	double *rxvals, dxval, dwce, *rwce, *rw, *rfromT;
 	double *rknots, *rMatrices, *rAddMatrices;
@@ -72,20 +72,20 @@ intercept : wehtehr first basis is included
 	
 	
 	PROTECT(knots = coerceVector(knots, REALSXP));
-	PROTECT(order = coerceVector(order, INTSXP));
+/*	PROTECT(order = coerceVector(order, INTSXP)); */
 	PROTECT(Matrices = coerceVector(Matrices, REALSXP));
-	PROTECT(intercept = coerceVector(intercept, INTSXP));
+/*	PROTECT(intercept = coerceVector(intercept, INTSXP)); */
 	PROTECT(xvals = coerceVector(xvals, REALSXP));
 	PROTECT(xId = coerceVector(xId, INTSXP));
 	PROTECT(w	= coerceVector(w, REALSXP));
 	PROTECT(fromT = coerceVector(fromT, REALSXP));
 	PROTECT(FirstId = coerceVector(FirstId, INTSXP));
 	PROTECT(LastId = coerceVector(LastId, INTSXP));
-	PROTECT(outerok = coerceVector(outerok, LGLSXP));
+/*	PROTECT(outerok = coerceVector(outerok, LGLSXP)); */
 	
 	rknots = REAL(knots); 
 	nknots = length(knots);
-	theorder = INTEGER(order)[0];
+	theorder = asInteger(order);
 	
 	dims = getAttrib(Matrices, R_DimSymbol);
 	if( LENGTH(dims) < 3 ){
@@ -94,7 +94,17 @@ intercept : wehtehr first basis is included
 	nbases = INTEGER(dims)[1];
 	nintervals = INTEGER(dims)[2];
 	
-	firstbasis = (INTEGER(intercept)[0]==0);
+/* first basis to start with : 
+ *     if intercept =TRUE, all bases                -> firstbasis = 0, 
+ *     if intercept =FALSE, remove base number one  -> firstbasis = 1   */
+	ii = asLogical(intercept);
+	if(ii == NA_LOGICAL) {
+		error("'intercept' must be TRUE or FALSE");    
+	} else   if (ii) {
+		firstbasis = 0;
+	} else {
+		firstbasis = 1;
+	}
 	rMatrices = REAL(Matrices);
         
 	rxvals = REAL(xvals); 
@@ -164,11 +174,11 @@ intercept : wehtehr first basis is included
 			rwce[i] += rw[j] * dwce;
 		}
 	}
-	UNPROTECT(12);
+	UNPROTECT(9);
 	return(wce);
 }
 
-SEXP eval_wce_espline_basis(SEXP knots, SEXP order, SEXP Matrices, SEXP intercept, 
+SEXP predict_wce_espline_basis(SEXP knots, SEXP order, SEXP Matrices, SEXP intercept, 
 			   SEXP w, SEXP fromT, SEXP FirstId, SEXP LastId,  
 			   SEXP xvals, SEXP xId)
 {
@@ -190,7 +200,7 @@ intercept : wehtehr first basis is included
 *  it is assumed that each xvals <= toT[xId] 
  */
 	R_len_t nknots, theorder, nbases, nintervals, firstbasis;
-	R_len_t i, j, k, nw, nt, nx, istart, ilast, ixId, nxId, nFId;
+	R_len_t i, j, k, nw, nt, nx, istart, ilast, ixId, nxId, nFId, ii;
 	int *rxId, *rFirstId, *rLastId;
 	double *rxvals, dxval, dwce, *rwce, *rw, *rfromT;
 	double *rknots, *rMatrices, *rAddMatrices;
@@ -203,9 +213,9 @@ intercept : wehtehr first basis is included
 	outer_val = 0.0;
 
 	PROTECT(knots = coerceVector(knots, REALSXP));
-	PROTECT(order = coerceVector(order, INTSXP));
+/*	PROTECT(order = coerceVector(order, INTSXP)); */
 	PROTECT(Matrices = coerceVector(Matrices, REALSXP));
-	PROTECT(intercept = coerceVector(intercept, INTSXP));
+/*	PROTECT(intercept = coerceVector(intercept, INTSXP)); */
 	PROTECT(xvals = coerceVector(xvals, REALSXP));
 	PROTECT(xId = coerceVector(xId, INTSXP));
 	PROTECT(w	= coerceVector(w, REALSXP));
@@ -224,7 +234,17 @@ intercept : wehtehr first basis is included
 	nbases = INTEGER(dims)[1];
 	nintervals = INTEGER(dims)[2];
 	
-	firstbasis = (INTEGER(intercept)[0]==0);
+/* first basis to start with : 
+ *     if intercept =TRUE, all bases                -> firstbasis = 0, 
+ *     if intercept =FALSE, remove base number one  -> firstbasis = 1   */
+	ii = asLogical(intercept);
+	if(ii == NA_LOGICAL) {
+		error("'intercept' must be TRUE or FALSE");    
+	} else   if (ii) {
+		firstbasis = 0;
+	} else {
+		firstbasis = 1;
+	}
 	rMatrices = REAL(Matrices);
 
 	rxvals = REAL(xvals); 
@@ -287,11 +307,11 @@ intercept : wehtehr first basis is included
 			rwce[i] += rw[j] * dwce;
 		}
 	}
-	unprotect(11);
+	unprotect(9);
 	return(wce);
 }
 
-SEXP eval_wce_trunc_power_basis(SEXP knots, SEXP replicates, SEXP min, SEXP max, SEXP order, 
+SEXP predict_wce_trunc_power_basis(SEXP knots, SEXP replicates, SEXP min, SEXP max, SEXP order, 
 				SEXP coefs, SEXP degrees, SEXP intercept, 
 				SEXP w, SEXP fromT, SEXP FirstId, SEXP LastId, 
 				SEXP xvals, SEXP xId,  
@@ -320,7 +340,7 @@ degrees : vector of the degrees of each monimial : monoial_i(x) = (x  ...)^degre
 
 
 	R_len_t i, j, k, ibase, icoef, nknots, theorder, nbases;
-	R_len_t nw, nt, nx, istart, ilast, ixId, nxId, nFId, oo;
+	R_len_t nw, nt, nx, istart, ilast, ixId, nxId, nFId, oo, ii;
 	int *rxId, *rFirstId, *rLastId;
 	double *rxvals, dxval, dwce, *rwce, *rw, *rfromT;
 	SEXP wce;
@@ -332,26 +352,26 @@ degrees : vector of the degrees of each monimial : monoial_i(x) = (x  ...)^degre
 
 	PROTECT(knots = coerceVector(knots, REALSXP));
 	PROTECT(replicates = coerceVector(replicates, REALSXP));
-	PROTECT(min = coerceVector(min, REALSXP));
-	PROTECT(max = coerceVector(max, REALSXP));
-	PROTECT(order = coerceVector(order, INTSXP));
+/*	PROTECT(min = coerceVector(min, REALSXP));  */
+/*	PROTECT(max = coerceVector(max, REALSXP)); */
+/*	PROTECT(order = coerceVector(order, INTSXP)); */
 	PROTECT(coefs = coerceVector(coefs, REALSXP));
 	PROTECT(degrees = coerceVector(degrees, REALSXP));
-	PROTECT(intercept = coerceVector(intercept, INTSXP));
+/*	PROTECT(intercept = coerceVector(intercept, INTSXP)); */
 	PROTECT(xvals = coerceVector(xvals, REALSXP));
 	PROTECT(xId = coerceVector(xId, INTSXP));
 	PROTECT(w	= coerceVector(w, REALSXP));
 	PROTECT(fromT = coerceVector(fromT, REALSXP));
 	PROTECT(FirstId = coerceVector(FirstId, INTSXP));
 	PROTECT(LastId = coerceVector(LastId, INTSXP));
-	PROTECT(outerok = coerceVector(outerok, LGLSXP));
+/*	PROTECT(outerok = coerceVector(outerok, LGLSXP)); */
 	
 	rknots = REAL(knots); 
 	nknots = length(knots);
 	rreplicates = REAL(replicates);
-	theorder = INTEGER(order)[0];
-	rmin = REAL(min)[0];
-	rmax = REAL(max)[0];
+	theorder = asInteger(order);
+	rmin = asReal(min);
+	rmax = asReal(max);
 	
 	rcoefs = REAL(coefs); 
 	rdegrees = REAL(degrees); 
@@ -361,7 +381,17 @@ degrees : vector of the degrees of each monimial : monoial_i(x) = (x  ...)^degre
 	for( i=0; i<nknots;  i++){
 		nbases = nbases + rreplicates[i];
 	}
-	firstbasis = (INTEGER(intercept)[0]==0);
+/* first basis to start with : 
+ *     if intercept =TRUE, all bases                -> firstbasis = 0, 
+ *     if intercept =FALSE, remove base number one  -> firstbasis = 1   */
+	ii = asLogical(intercept);
+	if(ii == NA_LOGICAL) {
+		error("'intercept' must be TRUE or FALSE");    
+	} else   if (ii) {
+		firstbasis = 0;
+	} else {
+		firstbasis = 1;
+	}
 	
 	rxvals = REAL(xvals); 
 	nx = length(xvals);
@@ -421,10 +451,9 @@ degrees : vector of the degrees of each monimial : monoial_i(x) = (x  ...)^degre
 		}
 	}
 
-	UNPROTECT(16);
+	UNPROTECT(11);
 	return(wce);
 }
-
 
 
 

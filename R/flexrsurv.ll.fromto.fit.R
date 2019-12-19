@@ -1,8 +1,8 @@
 flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y, 
                                    expected_rate, 
                                    weights=NULL,
-                                   Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
-                                   Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t_NPH=TRUE,
+                                   Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                                   Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t_NPH=TRUE,
                                    bhlink=c("log", "identity"),
                                    init=list(gamma0= NULL, alpha0=NULL, beta0=NULL, alpha=NULL, beta=NULL),
                                    fastinit=TRUE,
@@ -80,7 +80,7 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     } else if(is.vector(X0)) {
       nX0 <- 1L
     } else {
-      stop("wrong type of X0") 
+      stop("wrong type of X0", call.=TRUE) 
     }
     nalpha0<-nX0
     ialpha0<-1:nX0 + ngamma0
@@ -108,7 +108,7 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     } else if(is.vector(X)) {
       nX <- 1L
     } else {
-      stop("wrong type of X") 
+      stop("wrong type of X", call.=TRUE) 
     }
     nbeta0 <- sum(nTbasis_NPH)
     ibeta0 <- 1:nbeta0 + ngamma0 + nalpha0
@@ -361,6 +361,15 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     intweightsfunc <-intweights_BOOLE
     step <-method$step
     mult <- 4      
+  } else if(method$int_meth == "Gauss-Legendre"){
+    int_meth <- "GL"
+    intTD <- intTDft_GL
+    intTD_base<- intTDft_base_GL
+    intweightsfunc <-NULL
+    gq <- gauss.quad(method$npoints, kind="legendre")
+    step <- gq$nodes
+    Nstep <- gq$weights
+    
   } else if(method$int_meth == "GLM"){
     int_meth <- "GLM"
     intTD <- intTDft_GLM
@@ -378,7 +387,6 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     step<-STEPS$step
   }
 
-  
     LL <- +Inf
 
 # gradiant function
@@ -683,14 +691,14 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     options(show.error.messages = FALSE)
     cholinformationMatrix <- try(chol(informationMatrix), silent=TRUE)
     options(show.error.messages = TRUE)
-    if( class(cholinformationMatrix)=="try-error"){
+    if( inherits(cholinformationMatrix, "try-error")){
       var <- numeric(0)
       cat(geterrmessage())
     } else {
       options(show.error.messages = FALSE)
       var <- try( chol2inv(cholinformationMatrix) , silent=TRUE)
       options(show.error.messages = TRUE)
-      if( class(var)=="try-error"){
+      if( inherits(var, "try-error")){
         var <- numeric(0)
         cat(geterrmessage())
       }
@@ -724,14 +732,14 @@ flexrsurv.ll.fromto.fit<-function (X0, X, Z, Y,
     options(show.error.messages = FALSE)
     cholinformationMatrix <- try(chol(informationMatrix), silent=TRUE)
     options(show.error.messages = TRUE)
-    if( class(cholinformationMatrix)=="try-error"){
+    if( inherits(cholinformationMatrix, "try-error")){
       cat(geterrmessage())
       var <- numeric(0)
     } else {
       options(show.error.messages = FALSE)
       var <- try( chol2inv(cholinformationMatrix) , silent=TRUE)
       options(show.error.messages = TRUE)
-      if( class(var)=="try-error"){
+      if( inherits(var, "try-error")){
         cat(geterrmessage())
         var <- numeric(0)
       }

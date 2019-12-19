@@ -3,13 +3,13 @@ ll_flexrsurv_gamma0<-function(gamma0, alpha0, beta0, alpha, beta, Y, X0, X, Z,
                               weights=NULL,
                               step, Nstep,
                             intTD=intTD_NC, intweightsfunc=intweights_CAV_SIM,
-                            Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                            Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                               Intercept_t0=FALSE,
                             nT0basis,
                             nX0,
                             nX, 
                             nTbasis,
-                            Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                            Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                             Intercept_t_NPH=rep(TRUE, nX),
                             debug=FALSE, ...){
   # compute log likelihood of the relative survival model model
@@ -92,7 +92,7 @@ YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
   }
   
   if(nX + nZ) {
-    NPHterm <- intTD(func=rateTD_gamma0alphabeta, T=Y[,1], fail=Y[,2],
+    NPHterm <- intTD(func=rateTD_gamma0alphabeta, intTo=Y[,1], intToStatus=Y[,2],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=gamma0, Zalphabeta=Zalphabeta, 
@@ -101,7 +101,7 @@ YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
                      debug=debug)
   }
   else {
-    NPHterm <- intTD(func=rateTD_gamma0, Y[,1], fail=Y[,2],
+    NPHterm <- intTD(func=rateTD_gamma0, intTo=Y[,1], intToStatus=Y[,2],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=gamma0,

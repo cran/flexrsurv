@@ -4,12 +4,12 @@ gr_cumhaz_flexrsurv_GA0B0AB_bh<-function(GA0B0AB, var,
                                                 intTD=intTD_NC, intweightsfunc=intweights_CAV_SIM,
                                                 intTD_base=intTD_base_NC,
                                                 nT0basis,
-                                                Spline_t0=MSplineBasis(knots=NULL, degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                                                Spline_t0=BSplineBasis(knots=NULL, degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                                                 ialpha0, nX0,
                                                 ibeta0, nX,
                                                 ialpha, ibeta,                             
                                                 nTbasis,
-                                                Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                                                Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                                                 Intercept_t_NPH=rep(TRUE, nX),
                                                 debug=FALSE,  ...){
   # compute gradient of the cumulative hazard of the relatice survival model
@@ -95,13 +95,13 @@ if (debug) cat("# computing gradient of the cumulative hazard: gr_cumhaz_flexrsu
   }
   
   if(nX + nZ) {
-    NPHterm <- intTD(rateTD_bh_alphabeta, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+    NPHterm <- intTD(rateTD_bh_alphabeta, intTo=Y[,1], intToStatus=Y[,2],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
-    Intb0 <-  intTD_base(func=ratioTD_bh_alphabeta, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+    Intb0 <-  intTD_base(func=ratioTD_bh_alphabeta, intTo=Y[,1], intToStatus=Y[,2],
                          Spline=Spline_t0,
                          step=step, Nstep=Nstep, 
                          intweightsfunc=intweightsfunc, 
@@ -109,7 +109,7 @@ if (debug) cat("# computing gradient of the cumulative hazard: gr_cumhaz_flexrsu
                          Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                          Spline_t = Spline_t, Intercept_t=TRUE,
                          debug=debug)
-    Intb <-  intTD_base(func=rateTD_bh_alphabeta, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+    Intb <-  intTD_base(func=rateTD_bh_alphabeta, intTo=Y[,1], intToStatus=Y[,2],
                           Spline=Spline_t,
                           step=step, Nstep=Nstep, 
                           intweightsfunc=intweightsfunc,
@@ -123,16 +123,14 @@ if (debug) cat("# computing gradient of the cumulative hazard: gr_cumhaz_flexrsu
     
   }
   else {
-#    NPHterm <- intTD(rateTD_gamma0_bh, fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+#    NPHterm <- intTD(rateTD_gamma0_bh, intTo=Y[,1], intToStatus=Y[,2],
 #                     step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
 #                     gamma0=GA0B0AB[1:nT0basis],
 #                     Spline_t0=Spline_t0, Intercept_t0=Intercept_t0)
 #   NPHterm <- integrate(Spline_t0, Y[,1], intercep=Intercept_t0) %*% GA0B0AB[1:nT0basis]
-   NPHterm <- predict(integrate(Spline_t0*tmpgamma0), Y[,2], intercep=Intercept_t0) -
-              predict(integrate(Spline_t0*tmpgamma0), Y[,1], intercep=Intercept_t0)
+   NPHterm <- predict(integrate(Spline_t0*tmpgamma0), Y[,1], intercep=Intercept_t0) 
      #  only gamma0(t) Intb0[,i] = int_0^T bi(t) det
-    Intb0 <-  integrate(Spline_t0, Y[,2], intercep=Intercept_t0) - 
-              integrate(Spline_t0, Y[,1], intercep=Intercept_t0) 
+    Intb0 <-  integrate(Spline_t0, Y[,1], intercep=Intercept_t0) 
     Intb <- NULL
   }
 

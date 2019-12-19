@@ -38,13 +38,16 @@ static const R_CallMethodDef callMethods[] = {
      CALLDEF(eval_lc_trunc_power_increasing_basis, 11),
      CALLDEF(slow_predict_spline_basis, 6),
      CALLDEF(predict_spline_basis, 6),
-     CALLDEF(slow_predict_linex_spline_basis, 8),
+     CALLDEF(slow_predict_linex_spline_basis, 9),
      CALLDEF(predict_linex_spline_basis, 9),
      CALLDEF(predict_trunc_power_increasing_basis, 10),
      CALLDEF(predict_trunc_power_basis, 10),
-     CALLDEF(eval_wce_spline_basis, 11),
-     CALLDEF(eval_wce_espline_basis, 10),
-     CALLDEF(eval_wce_trunc_power_basis, 15),
+     CALLDEF(predict_wce_spline_basis, 11),
+     CALLDEF(predict_wce_espline_basis, 10),
+     CALLDEF(predict_wce_trunc_power_basis, 15),
+     CALLDEF(grad_wce_spline_basis, 11),
+     CALLDEF(grad_wce_espline_basis, 10),
+     CALLDEF(grad_wce_trunc_power_basis, 15),
     {NULL, NULL, 0}
 
 };
@@ -56,9 +59,10 @@ void R_init_flexrsurv(DllInfo *info)
 No  .C() .Fortran() or .External() routines,
 so pass those arrays as NULL.
 */
-R_registerRoutines(info, 
-	NULL, 
-	callMethods,
-	NULL, NULL);
-R_useDynamicSymbols(info, TRUE);
+	R_registerRoutines(info, 
+			   NULL, 
+			   callMethods,
+			   NULL, NULL);
+	R_useDynamicSymbols(info, FALSE);
+	R_forceSymbols(info, TRUE);
 }

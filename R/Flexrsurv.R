@@ -12,9 +12,10 @@ flexrsurv <- function(formula=formula(data),
                        rate=NULL, 
                        weights=NULL,
                        na.action=NULL,
-                       int_meth=c("BANDS", "CAV_SIM", "SIM_3_8", "BOOLE"),
-                       bands=NULL,
+                       int_meth=c("GL", "CAV_SIM", "SIM_3_8", "BOOLE", "BANDS"),
+                       npoints=20,              
                        stept=NULL,              
+                       bands=NULL,
                        init=NULL,
                        initbyglm=TRUE,
                        initbands=bands,
@@ -48,16 +49,19 @@ flexrsurv <- function(formula=formula(data),
   #----------------------------------------------------------------------------------------
 
 if (int_meth == "BANDS"){
-	if( is.null(bands) ) {
-		stop(gettextf("argument 'bands' must be specified if 'int_meth' = %s.", dQuote("BANDS"), domain=NA))
-		}
-	}
-	else {
-		if( is.null(stept) ) {
-		stop(gettextf("argument 'step' must be specified if 'int_meth' != %s.", dQuote("BANDS"), domain=NA))
-		}
-	}
-	
+  if( is.null(bands) ) {
+    stop(gettextf("argument 'bands' must be specified if 'int_meth' = %s.", dQuote("BANDS"), domain=NA))
+  }
+} else if (int_meth == "GL"){
+  if( is.null(npoints) ) {
+    stop(gettextf("argument 'npoints' must be specified if 'int_meth' = %s.", dQuote("GL"), domain=NA))
+  }
+} else {
+  if( is.null(stept) ) {
+    stop(gettextf("argument 'step' must be specified if 'int_meth' != %s or != %s.", dQuote("BANDS"), dQuote("GL"), domain=NA))
+  }
+}
+  
   
   mf <- match.call(expand.dots = FALSE)
   
@@ -156,9 +160,14 @@ if (int_meth == "BANDS"){
   #----------------------------------------------------------------------------------------
   if (initbyglm == TRUE) {
     if (int_meth != "BANDS" & is.null(initbands)){
-         initbands <- seq(Min_T, Max_T, stept*5)
-		 warning("'initbands' has been set to seq(Min_T, Max_T, stept*5)", call. = FALSE)
+      if(int_meth == "GL"){
+        initbands <- seq(Min_T, Max_T,length.out= npoints * 5)
+        warning("'initbands' has been set to seq(Min_T, Max_T, length.out= npoints * 5)", call. = FALSE)
+      } else {
+        initbands <- seq(Min_T, Max_T, stept*5)
+        warning("'initbands' has been set to seq(Min_T, Max_T, stept*5)", call. = FALSE)
       }
+    }
 
     
     name.runningtime <- ".t"

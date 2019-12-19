@@ -1,11 +1,11 @@
 gr_link_flexrsurv_fromto_GA0B0AB<-function(GA0B0AB, Y, X0, X, Z, 
                                          nT0basis,
-                                         Spline_t0=MSplineBasis(knots=NULL, degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                                         Spline_t0=BSplineBasis(knots=NULL, degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                                          ialpha0, nX0,
                                          ibeta0, nX,
                                          ialpha, ibeta,                             
                                          nTbasis,
-                                         Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                                         Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                                          Intercept_t_NPH=rep(TRUE, nX),
                                          debug=FALSE,  ...){
   # compute gradient of the linear parts of the rate (on the link scale) of the relatice survival model
@@ -100,6 +100,9 @@ gr_link_flexrsurv_fromto_GA0B0AB<-function(GA0B0AB, Y, X0, X, Z,
     if (nZ) { 
       YTbeta <- YT %*% t(tBeta)
       indZ <- getIndex(Z)
+
+      dLdalpha <- NULL
+      dLdbeta <- NULL
       
       for(iZ in 1:nZ){
         dLdalpha <- cbind( dLdalpha, Z@DM[,indZ[iZ,1]:indZ[iZ,2]] * YTbeta[,iZ] )

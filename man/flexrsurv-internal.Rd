@@ -32,7 +32,6 @@
 \alias{-,SplineBasis,numeric-method}
 \alias{-,SplineBasis,SplineBasis-method}
 \alias{-,TPSplineBasis,numeric-method}
-
 \alias{*,LEMSplineBasis,numeric-method}
 \alias{*,numeric,LEMSplineBasis-method}
 \alias{+,LEMSplineBasis,LEMSplineBasis-method}
@@ -41,6 +40,30 @@
 \alias{-,LEMSplineBasis,LEMSplineBasis-method}
 \alias{-,LEMSplineBasis,numeric-method}
 \alias{-,numeric,LEMSplineBasis-method}
+\alias{\%*\%,BSplineBasis,matrix-method}
+\alias{\%*\%,LEBSplineBasis,matrix-method}
+\alias{\%*\%,SplineBasis,matrix-method}
+\alias{\%*\%,matrix,BSplineBasis-method}
+\alias{\%*\%,matrix,LEBSplineBasis-method}
+\alias{\%*\%,matrix,SplineBasis-method}
+\alias{*,BSplineBasis,numeric-method}
+\alias{*,LEBSplineBasis,numeric-method}
+\alias{*,numeric,BSplineBasis-method}
+\alias{*,numeric,LEBSplineBasis-method}
+\alias{+,BSplineBasis,BSplineBasis-method}
+\alias{+,BSplineBasis,numeric-method}
+\alias{+,LEBSplineBasis,LEBSplineBasis-method}
+\alias{+,LEBSplineBasis,numeric-method}
+\alias{+,numeric,BSplineBasis-method}
+\alias{+,numeric,LEBSplineBasis-method}
+\alias{-,BSplineBasis,BSplineBasis-method}
+\alias{-,BSplineBasis,numeric-method}
+\alias{-,LEBSplineBasis,LEBSplineBasis-method}
+\alias{-,LEBSplineBasis,numeric-method}
+\alias{-,numeric,BSplineBasis-method}
+\alias{-,numeric,LEBSplineBasis-method}
+\alias{dim,BSplineBasis-method}
+\alias{dim,EBSplineBasis-method}
 
 
 \title{

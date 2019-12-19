@@ -1,5 +1,5 @@
 ExpandCoefBasis<-function(coef, ncol, splinebasis, expand=rep(TRUE, ncol), value=0){
-# splinebasis : object of class "BSplineBasis",, "MSplineBasis",, "TPSplineBasis",
+# splinebasis : object of class "MSplineBasis",, "BSplineBasis",, "TPSplineBasis",
 # transform a vector of coef into a matrix of coef for spline evluation
 # if expand[i] ==FALSE, coef contains the nTbasis spline coef of the var i
 # if expand[i] ==True, coef contains the nTbasis-1 spline coef of the var i, thus add "value"  in the first col

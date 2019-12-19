@@ -28,9 +28,10 @@ flexrsurv(formula=formula(data),
    rate=NULL, 
    weights=NULL,
    na.action=NULL,
-   int_meth=c("BANDS", "CAV_SIM", "SIM_3_8", "BOOLE"),
-   bands=NULL,
+   int_meth=c("GL", "CAV_SIM", "SIM_3_8", "BOOLE", "BANDS"),
+   npoints=20,   
    stept=NULL,              
+   bands=NULL,
    init=NULL,
    initbyglm=TRUE,
    initbands=bands,
@@ -55,8 +56,9 @@ flexrsurv.ll(formula=formula(data),
    rate=NULL, 
    weights=NULL,
    na.action=NULL, 
-   int_meth=c("CAV_SIM", "SIM_3_8", "BOOLE", "GLM", "BANDS"),
-   stept=NULL,              
+   int_meth=c("GL", "CAV_SIM", "SIM_3_8", "BOOLE", "GLM", "BANDS"),
+   npoints=20,   
+   stept=NULL,
    bands=NULL,
    init=NULL,
    optim.control=list(trace=100, REPORT=1, fnscale=-1, maxit=25), 
@@ -115,15 +117,19 @@ The model \code{method=="additive"} assumes effects as explained in Remontet et 
 }
   \item{int_meth}{
       character string specifying the the numerical integration method. Possible values are 
-    "CAV_SIM" for Cavalieri-Simpson's rule, "SIM_3_8" for the Simpson's 3/8 rule, 
+	  "GL" for Gauss-Legendre quadrature, 
+      "CAV_SIM" for Cavalieri-Simpson's rule, "SIM_3_8" for the Simpson's 3/8 rule, 
 	  "BOOLE" for the Boole's rule, or "BANDS" for the midpoint rule with specified bands.
 }
-   \item{bands}{
-      bands used to split data in the numerical integration when \code{int_meth="BANDS"}).
+   \item{npoints}{
+      number of points used in the Gauss-Legendre quadrature (when \code{int_meth="GL"}).
 }
    \item{stept}{
       scalar value of the time-step in numerical integration. It is required only when  \code{int_meth="CAV_SIM"} or \code{"SIM_3_8"} or \code{"BOOLE"}. 
     If no value is supplied,  \code{Max_T/500} is used.
+}
+   \item{bands}{
+      bands used to split data in the numerical integration when \code{int_meth="BANDS"}.
 }
   \item{init}{
       starting values of the parameters.  
@@ -251,6 +257,8 @@ The model \code{method=="additive"} assumes effects as explained in Remontet et 
 
 \examples{
 
+\donttest{
+
 # data from package relsurv
 data(rdata, package="relsurv")
 
@@ -286,7 +294,6 @@ fit <- flexrsurv(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
                  )
 summary(fit)
 
-\dontrun{
 # fit a relative survival model with a non linear & non proportional effect of age
 fit2 <- flexrsurv(Surv(time,cens)~sex01+NPHNLL(age, time, Knots=60,
                                                Degree=3,

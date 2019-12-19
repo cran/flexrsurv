@@ -1,8 +1,8 @@
 flexrsurv.ll.fit<-function (X0, X, Z, Y, 
                             expected_rate, 
                             weights=NULL,
-                            Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
-                            Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t_NPH=TRUE,
+                            Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                            Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t_NPH=TRUE,
                             bhlink=c("log", "identity"),
                             init=list(gamma0= NULL, alpha0=NULL, beta0=NULL, alpha=NULL, beta=NULL),
                             fastinit=TRUE,
@@ -362,6 +362,16 @@ flexrsurv.ll.fit<-function (X0, X, Z, Y,
     intweightsfunc <- intweights_BOOLE
     step <- method$step
     mult <- 4      
+  } else if(method$int_meth == "Gauss-Legendre"){
+    int_meth <- "GL"
+    intTD <- intTD_GL
+    # essai integrate 
+    # intTD <- intTD_integrate
+    intTD_base<- intTD_base_GL
+    intweightsfunc <-NULL
+    gq <- gauss.quad(method$npoints, kind="legendre")
+    step <- gq$nodes
+    Nstep <- gq$weights
   } else if(method$int_meth == "GLM"){
     int_meth <- "GLM"
     intTD <- intTD_GLM
@@ -664,14 +674,14 @@ optimfunction <- "optim"
     options(show.error.messages = FALSE)
     cholinformationMatrix <- try(chol(informationMatrix), silent=TRUE)
     options(show.error.messages = TRUE)
-    if( class(cholinformationMatrix)=="try-error"){
+    if( inherits(cholinformationMatrix, "try-error")){
       var <- numeric(0)
       cat(geterrmessage())
     } else {
       options(show.error.messages = FALSE)
       var <- try( chol2inv(cholinformationMatrix) , silent=TRUE)
       options(show.error.messages = TRUE)
-      if( class(var)=="try-error"){
+      if( inherits(var, "try-error")){
         var <- numeric(0)
         cat(geterrmessage())
       }
@@ -705,14 +715,14 @@ optimfunction <- "optim"
     options(show.error.messages = FALSE)
     cholinformationMatrix <- try(chol(informationMatrix), silent=TRUE)
     options(show.error.messages = TRUE)
-    if( class(cholinformationMatrix)=="try-error"){
+    if( inherits(cholinformationMatrix, "try-error")){
       cat(geterrmessage())
       var <- numeric(0)
     } else {
       options(show.error.messages = FALSE)
       var <- try( chol2inv(cholinformationMatrix) , silent=TRUE)
       options(show.error.messages = TRUE)
-      if( class(var)=="try-error"){
+      if( inherits(var, "try-error")){
         cat(geterrmessage())
         var <- numeric(0)
       }

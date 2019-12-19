@@ -5,12 +5,12 @@ gr_ll_flexrsurv_GA0B0AB<-function(GA0B0AB, Y, X0, X, Z,
                                   intTD=intTD_NC, intweightsfunc=intweights_CAV_SIM,
                                   intTD_base=intTD_base_NC,
                                   nT0basis,
-                                  Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                                  Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                                   ialpha0, nX0,
                                   ibeta0, nX,
                                   ialpha, ibeta,                             
                                   nTbasis,
-                                  Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                                  Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                                   Intercept_t_NPH=rep(TRUE, nX),
                                   debug.gr=FALSE,  ...){
   # compute gradient of the log likelihood of the relatice survival model
@@ -102,14 +102,14 @@ YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
   }
   
   if(nX + nZ) {
-    NPHterm <- intTD(rateTD_gamma0alphabeta, Y[,1],  fail=Y[,2],
+    NPHterm <- intTD(rateTD_gamma0alphabeta, intTo=Y[,1],  intToStatus=Y[,2],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
 
-    Intb0 <-  intTD_base(func=rateTD_gamma0alphabeta, T=Y[,1],  fail=Y[,2],
+    Intb0 <-  intTD_base(func=rateTD_gamma0alphabeta, intTo=Y[,1],  intToStatus=Y[,2],
                          Spline=Spline_t0,
                          step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                          gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
@@ -120,7 +120,7 @@ YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
       Intb <- Intb0
     }
     else {
-      Intb <-  intTD_base(func=rateTD_gamma0alphabeta, T=Y[,1],  fail=Y[,2],
+      Intb <-  intTD_base(func=rateTD_gamma0alphabeta, intTo=Y[,1],  intToStatus=Y[,2],
                           Spline=Spline_t,
                           step=step, Nstep=Nstep, intweightsfunc=intweightsfunc,
                           gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 
@@ -139,11 +139,11 @@ YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
                        0)
   }
   else {
-    NPHterm <- intTD(rateTD_gamma0, Y[,1],  fail=Y[,2], 
+    NPHterm <- intTD(rateTD_gamma0, intTo=Y[,1],  intToStatus=Y[,2], 
                      step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                      gamma0=GA0B0AB[1:nT0basis],
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
-    Intb0 <-  intTD_base(func=rateTD_gamma0, T=Y[,1],  fail=Y[,2],
+    Intb0 <-  intTD_base(func=rateTD_gamma0, intTo=Y[,1],  intToStatus=Y[,2],
                          Spline=Spline_t0,
                          step=step, Nstep=Nstep, intweightsfunc=intweightsfunc, 
                          gamma0=GA0B0AB[1:nT0basis], 

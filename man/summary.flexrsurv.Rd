@@ -71,7 +71,7 @@
 
 
 \examples{
-\dontrun{
+\donttest{
 # data from package relsurv
 data(rdata, package="relsurv")
 # rate table from package relsurv

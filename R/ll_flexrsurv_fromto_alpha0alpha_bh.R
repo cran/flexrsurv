@@ -5,12 +5,12 @@ ll_flexrsurv_fromto_alpha0alpha_bh<-function(alpha0alpha, beta0, beta, gamma0,
                                           step, Nstep, 
                                  intTD=intTD_NC, intweightsfunc=intweights_CAV_SIM,
                                  nT0basis,
-                                 Spline_t0=MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
+                                 Spline_t0=BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE), Intercept_t0=TRUE,
                                  ialpha0, nX0,
                                  nX, 
                                  ialpha,
                                  nTbasis,
-                                 Spline_t =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+                                 Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
                                  Intercept_t_NPH=rep(TRUE, nX), 
                                  debug=FALSE,  ...){
   # compute log likelihood of the relative survival model
@@ -99,17 +99,19 @@ YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
   }
 
   if(nX + nZ) {
-    NPHterm <- intTD(rateTD_gamma0alphabeta,  fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+    NPHterm <- intTD(rateTD_gamma0alphabeta, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],  
                      step, Nstep,
                      intweightsfunc=intweightsfunc, 
+                     fromT=Y[,1], toT=Y[,2], 
                      gamma0=gamma0, Zalphabeta=Zalphabeta, 
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0,
                      Spline_t = Spline_t, Intercept_t=TRUE)
   }
   else {
-    NPHterm <- intTD(rateTD_gamma0,  fromT=Y[,1], toT=Y[,2], fail=Y[,3],
+    NPHterm <- intTD(rateTD_gamma0, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3], 
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
+                     fromT=Y[,1], toT=Y[,2],
                      gamma0=gamma0,
                      Spline_t0=Spline_t0*tmpgamma0, Intercept_t0=Intercept_t0)
   }

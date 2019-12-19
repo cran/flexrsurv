@@ -75,14 +75,14 @@ predictHazard.flexrsurv <- function(object, newdata = NULL,
     }
     
     if(Spline=="b-spline"){
-      Spline_t0 <- MSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
+      Spline_t0 <- BSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
                                 degree=degree.Bh,
                                 keep.duplicates=TRUE)
       Intercept_t0 <- TRUE
       nT0basis <- getNBases(Spline_t0) - 1 +  Intercept_t0
       ngamma0 <- nT0basis
       
-      Spline_t<- MSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
+      Spline_t<- BSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
                               degree=degree.Bh,
                               keep.duplicates=TRUE)
     } else if(Spline=="tp-spline") {

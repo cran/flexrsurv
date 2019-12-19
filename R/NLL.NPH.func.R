@@ -12,7 +12,7 @@ NLL <-function(x,
                ...){
   Spline <- match.arg(Spline)
   if (Spline=="b-spline") {
-    xspline  <- MSplineBasis(knots=c(Boundary.knots[1], Knots, Boundary.knots[2]),
+    xspline  <- BSplineBasis(knots=c(Boundary.knots[1], Knots, Boundary.knots[2]),
                              degree=Degree,
                              keep.duplicates=Keep.duplicates,
                              log=FALSE)
@@ -85,7 +85,7 @@ NPH <-function(x,timevar,
     
   Spline <- match.arg(Spline)
   if (Spline=="b-spline") {
-    tspline  <- MSplineBasis(knots=c(Boundary.knots.t[1], Knots.t, Boundary.knots.t[2]),
+    tspline  <- BSplineBasis(knots=c(Boundary.knots.t[1], Knots.t, Boundary.knots.t[2]),
                              degree=Degree.t,
                              keep.duplicates=Keep.duplicates.t,
                              log=FALSE)
@@ -128,7 +128,7 @@ NPHalpha <-function(x,timevar,
   Spline <- match.arg(Spline)
 
   if (Spline=="b-spline") {
-    tspline  <- MSplineBasis(knots=c(Boundary.knots.t[1], Knots.t, Boundary.knots.t[2]),
+    tspline  <- BSplineBasis(knots=c(Boundary.knots.t[1], Knots.t, Boundary.knots.t[2]),
                              degree=Degree.t,
                              keep.duplicates=Keep.duplicates.t,
                              log=FALSE)
@@ -179,12 +179,12 @@ NPHNLL <- function(x,timevar,
   model <- match.arg(model)
   
   if (Spline=="b-spline") {
-    xspline  <- MSplineBasis(knots=c(Boundary.knots[1], Knots, Boundary.knots[2]),
+    xspline  <- BSplineBasis(knots=c(Boundary.knots[1], Knots, Boundary.knots[2]),
                              degree=Degree,
                              keep.duplicates=Keep.duplicates,
                              log=FALSE)
 
-    tspline  <- MSplineBasis(knots=c(Boundary.knots.t[1], Knots.t, Boundary.knots.t[2]),
+    tspline  <- BSplineBasis(knots=c(Boundary.knots.t[1], Knots.t, Boundary.knots.t[2]),
                              degree=Degree.t,
                              keep.duplicates=Keep.duplicates,
                              log=FALSE)

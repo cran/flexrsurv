@@ -1,5 +1,17 @@
 NEWS about R package flexrsurv
 
+Version 1.4.4 - 2019-12-05
+      o code optimisation
+      o S3 methods logLik() et nobs()
+      o code corrections to make the test pass when _R_CHECK_LENGTH_1_CONDITION_ is set to true 
+      
+Version 1.4.3 - 2018-10-08
+      o rename several C functions
+	  
+Version 1.4.2 - 2018-08-08
+      o implementation of Gauss Legendre quadrature
+      o bug corrections in predict.flexrsurv() in case of NPHNLL effect
+	  
 Version 1.4.1 - 2017-05-12
       o registration of native routines
 Version 1.3.7 - 2017-01-12

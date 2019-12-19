@@ -88,7 +88,15 @@ predictCumulativeHazard.flexrsurv <- function(object, newdata = NULL,
         intweightsfunc <- intweights_BOOLE
         step <- method$step
         mult <- 4      
-      } else if(method$int_meth == "GLM"){
+      } else if(method$int_meth == "Gauss-Legendre"){
+        int_meth <- "GL"
+        intTD <- intTD_GL
+        intTD_base<- intTD_base_GL
+        intweightsfunc <-NULL
+        gq <- gauss.quad(method$npoints, kind="legendre")
+        step <- gq$nodes
+        Nstep <- gq$weights
+  } else if(method$int_meth == "GLM"){
         int_meth <- "GLM"
         intTD <- intTD_GLM
         intTD_base <- fastintTD_base_GLM
@@ -126,6 +134,14 @@ predictCumulativeHazard.flexrsurv <- function(object, newdata = NULL,
         intweightsfunc <-intweights_BOOLE
         step <-method$step
         mult <- 4      
+      } else if(method$int_meth == "Gauss-Legendre"){
+        int_meth <- "GL"
+        intTD <- intTDft_GL
+        intTD_base<- intTDft_base_GL
+        intweightsfunc <-NULL
+        gq <- gauss.quad(method$npoints, kind="legendre")
+        step <- gq$nodes
+        Nstep <- gq$weights
       } else if(method$int_meth == "GLM"){
         int_meth <- "GLM"
         intTD <- intTDft_GLM
@@ -157,14 +173,14 @@ predictCumulativeHazard.flexrsurv <- function(object, newdata = NULL,
     }
     
     if(Spline=="b-spline"){
-      Spline_t0 <- MSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
+      Spline_t0 <- BSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
                                 degree=degree.Bh,
                                 keep.duplicates=TRUE)
       Intercept_t0 <- TRUE
       nT0basis <- getNBases(Spline_t0) - 1 +  Intercept_t0
       ngamma0 <- nT0basis
       
-      Spline_t<- MSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
+      Spline_t<- BSplineBasis(knots=c(Min_T, knots.Bh, Max_T),
                               degree=degree.Bh,
                               keep.duplicates=TRUE)
     } else if(Spline=="tp-spline") {

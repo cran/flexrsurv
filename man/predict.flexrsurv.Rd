@@ -64,7 +64,7 @@ To work correctly, arguments \code{Boundary.knots} and
 
 \examples{
 
-\dontrun{
+\donttest{
 
 # data from package relsurv
 data(rdata, package="relsurv")

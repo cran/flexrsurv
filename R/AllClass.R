@@ -6,34 +6,92 @@ setClass(".SplineBasis",
                         degree="integer",
                         nbases="integer",
                         log="logical",
+                        clog="numeric",
                         "VIRTUAL"))
+# Object B Spline Basis
+# slot SplineBasis of class SplineBasis of package "orthogonalsplinebasis"
+# slot knots contains all the knots, including all the duplicated boundary knots
 setClass("BSplineBasis",
-         representation(Matrices="array"),
+         representation(min="numeric",
+                        max="numeric",
+						Matrices="array",
+						SplineBasis="SplineBasis"),
          contains=".SplineBasis")
 
+# Object M Spline Basis
 # slot SplineBasis of class SplineBasis of package "orthogonalsplinebasis"
 # slot knots contains all the knots, including all the duplicated boundary knots
 setClass("MSplineBasis",
-         representation(min="numeric",
-                        max="numeric",
-                        SplineBasis="SplineBasis"),
          contains="BSplineBasis")
 
-# linearly extended Msplinebasis
-# same parameters/slot as MSplineBasis but methods are different
+
+# BDSplineBasis = (BSplineBasis,  Dirac delta function , Log)
+ # last basis is the primitive of order "dirac" of the Dirac delta function at min(knots)
+# if dirac == 0, last basis is the Dirac delta function
+
+setClass("BDSplineBasis",
+         representation(dirac ="integer",
+                        cdirac="numeric"),
+         contains="BSplineBasis")
+
+setClass("MDSplineBasis",
+         contains="BDSplineBasis")
+
+
+
+
+# B-Spline basis define on ]-infty, + infty[ such that
+#               the spline created is 0 out of [min, max]
+#               when integrating (and derivating), the 0-extrapolation is integrated/derived 
+# slot knots contains all the knots, including all the duplicated boundary knots
+ setClass("EBSplineBasis",
+		 contains="BSplineBasis")
+ 
+ # M-Spline basis define on ]-infty, + infty[ such that
+#               the spline created is 0 out of [min, max]
+#               when integrating (and derivating), the 0-extrapolation is integrated/derived 
+# slot knots contains all the knots, including all the duplicated boundary knots
+ setClass("EMSplineBasis",
+		 contains="MSplineBasis")
+ 
+ # linearly extended Bsplinebasis
+# same parameters/slot as BSplineBasis but methods are different
 # slot knots contains all the knots, including all the duplicated boundary knots
 # slots  linexinf and linexsup are 2x2 matrix such that linear extrapolation is
 #    linexinf %*% c(1, (x-kmin))
 #    linexsup %*% c(1, (x-kmax))
-setClass("LEMSplineBasis",
-         representation(min="numeric",
-                        max="numeric",
-                        SplineBasis="SplineBasis",
-                        orderextrapol ="integer",
+setClass("LEBSplineBasis",
+         representation(orderextrapol ="integer",
                         linexinf="array",
                         linexsup="array"),
          contains="BSplineBasis")
 
+# Restricted Msplinebasis : linear extrapolation + 2nd derivative at boundary == 0
+# same parameters/slot as BSplineBasis but methods are different
+# slot knots contains all the knots, including all the duplicated boundary knots
+# slots  linexinf and linexsup are 2x2 matrix such that linear extrapolation is
+#    linexinf %*% c(1, (x-kmin))
+#    linexsup %*% c(1, (x-kmax))
+# R2MSplinBasis are LEBSplineBasis with specific Matrices and number of basis
+setClass("R2BSplineBasis",
+         contains="LEBSplineBasis")
+
+# Restricted Msplinebasis : linear extrapolation + 2nd derivative at boundary == 0
+# with firstB'(kmin) = 0 and lastB'(Kmax) = 0
+#
+# it is a "R2BSplineBasis" with rotated basis
+# if order = 4, restricted cubic spline
+# the coef of extrapolated linear term is the first and the last coef
+# same parameters/slot as BSplineBasis but methods are different
+# slot knots contains all the knots, including all the duplicated boundary knots
+# slots  linexinf and linexsup are 2x2 matrix such that linear extrapolation is
+#    linexinf %*% c(1, (x-kmin))
+#    linexsup %*% c(1, (x-kmax))
+# R2MSplinBasis are LEBSplineBasis with specific Matrices and number of basis
+setClass("R2bBSplineBasis",
+         contains="LEBSplineBasis")
+
+# TP Spline Basis
 setClass("TPSplineBasis",
          # knots are interior knots
          representation(min="numeric",
@@ -42,6 +100,13 @@ setClass("TPSplineBasis",
                         degrees="integer",
                         type="character"),
          contains=".SplineBasis")
+
+
+# Spline basis define on ]-infty, + infty[ such that
+#               the spline created is 0 out of [min, max]
+#               when integrating (and derivating), the 0-extrapolation is integrated/derived 
+setClass("ETPSplineBasis",
+         contains="TPSplineBasis")
 
 
 # idem but first bases are (x-ref)^i
@@ -55,7 +120,7 @@ setClass("C0BSplineBasis", representation("BSplineBasis",
 setClass("C0TPSplineBasis", representation("TPSplineBasis",
                                           ref="numeric"))
 
-setClassUnion("AnySplineBasis", c("BSplineBasis", "MSplineBasis", "LEMSplineBasis", "TPSplineBasis"))
+setClassUnion("AnySplineBasis", c("BSplineBasis", "MSplineBasis", "LEBSplineBasis", "TPSplineBasis"))
 
 ##########################################################################################################
 ## Class DesignMatrix*

@@ -57,7 +57,7 @@ get_Splinebasis <- function(objterm,
         if( is.null(thecall[["Spline"]])){
                                         # default is b-spline
         
-          thespline <- MSplineBasis(knots=c(therange[1],
+          thespline <- BSplineBasis(knots=c(therange[1],
                                       eval(as.expression(thecall[["Knots"]])), 
                                       therange[2]),
                                     degree=ifelse(is.null(thecall[["Degree"]]),
@@ -86,7 +86,7 @@ get_Splinebasis <- function(objterm,
         else if( thecall[["Spline"]]== "b-spline" ){
           if (is.null(thecall[["Degree"]])) {thecall[["Degree"]]<-3}
           
-          thespline <- MSplineBasis(knots=c(therange[1],
+          thespline <- BSplineBasis(knots=c(therange[1],
                                       eval(as.expression(thecall[["Knots"]])), 
                                       therange[2]),
                                     degree=ifelse(is.null(thecall[["Degree"]]),
@@ -94,7 +94,18 @@ get_Splinebasis <- function(objterm,
                                       thecall[["Degree"]]),
                                     keep.duplicates=FALSE)
         }
-        else { 
+		else if( thecall[["Spline"]]== "m-spline" ){
+			if (is.null(thecall[["Degree"]])) {thecall[["Degree"]]<-3}
+			
+			thespline <- MSplineBasis(knots=c(therange[1],
+							eval(as.expression(thecall[["Knots"]])), 
+							therange[2]),
+					degree=ifelse(is.null(thecall[["Degree"]]),
+							formals(fun)[["Degree"]],
+							thecall[["Degree"]]),
+					keep.duplicates=FALSE)
+		}
+		else { 
           stop("wrong type of spline specification", attr(objterm,"variables")[[i+1]])
         }
         var_list <- c( var_list, thevar) 
@@ -125,7 +136,7 @@ get_TimeSplinebasis <- function(objterm,
   
   indxvar <- attr(objterm, "specials")[specials]
   nvars <- length(unlist(indxvar))
-  
+
   if(nvars==0){
     # no "specials" vars 
     return(NULL)
@@ -137,8 +148,8 @@ get_TimeSplinebasis <- function(objterm,
     else {
       oindxvar <- order(unlist(indxvar))
     }  
-    var_list <- NULL
-    Spline_list <- NULL
+    var_list <- list()
+    Spline_list <- list()
 
     for(is in specials){
       fun <- mget(is,
@@ -149,66 +160,80 @@ get_TimeSplinebasis <- function(objterm,
         thecall <- match.call(fun, attr(objterm,"variables")[[i+1]])
      
         thevar <- thecall[["timevar"]]
-        
-        Knots <- eval(as.expression(thecall[["Knots.t"]]))
-        
-        if( !is.null(thecall[["Boundary.knots.t"]]) ){
-          therange <- eval(as.expression(thecall[["Boundary.knots.t"]]))
+        if( !is.null(thecall[[paste("Spline", is, sep=".")]])){
+          thespline <- eval(as.expression(thecall[[paste("Spline", is, sep=".")]]))
         }
         else {
+          Knots <- eval(as.expression(thecall[["Knots.t"]]))
+          
+          if( !is.null(thecall[["Boundary.knots.t"]]) ){
+            therange <- eval(as.expression(thecall[["Boundary.knots.t"]]))
+          }
+          else {
                                         # compute the range of the variable 
-          therange <- eval(call("range", thevar), envir=data)
-        }        
-        
-        thecall[["Spline"]] <- ifelse(is.null(thecall[["Spline"]]),
-                                      eval(formals(fun)$Spline)[1],
-                                      thecall[["Spline"]])
-        if( is.null(thecall[["Spline"]])){
+            therange <- eval(call("range", thevar), envir=data)
+          }        
+          thecall[["Spline"]] <- ifelse(is.null(thecall[["Spline"]]),
+                                        eval(formals(fun)$Spline)[1],
+                                        thecall[["Spline"]])
+          if( is.null(thecall[["Spline"]])){
                                         # default is b-spline
-          
-          thespline <- MSplineBasis(knots=c(therange[1],
-                                      eval(as.expression(thecall[["Knots.t"]])), 
-                                      therange[2]),
-                                    degree=ifelse(is.null(thecall[["Degree.t"]]),
-                                      formals(fun)[["Degree.t"]],
-                                      thecall[["Degree.t"]]), 
-                                    keep.duplicates=FALSE)
+            
+            thespline <- BSplineBasis(knots=c(therange[1],
+                                        eval(as.expression(thecall[["Knots.t"]])), 
+                                        therange[2]),
+                                      degree=ifelse(is.null(thecall[["Degree.t"]]),
+                                        formals(fun)[["Degree.t"]],
+                                        thecall[["Degree.t"]]), 
+                                      keep.duplicates=FALSE)
+          }
+          else if( thecall[["Spline"]]== "tp-spline" ){
+            thespline <- TPSplineBasis(knots=eval(as.expression(thecall[["Knots.t"]])), 
+                                       degree=ifelse(is.null(thecall[["Degree.t"]]),
+                                         formals(fun)[["Degree.t"]],
+                                         thecall[["Degree.t"]]), 
+                                       min=therange[1],
+                                       max=therange[2],
+                                       type="standard")
+          }
+          else if( thecall[["Spline"]]== "tpi-spline" ){
+            thespline <- TPSplineBasis(knots=eval(as.expression(thecall[["Knots.t"]])), 
+                                       degree=ifelse(is.null(thecall[["Degree.t"]]),
+                                         formals(fun)[["Degree.t"]],
+                                         thecall[["Degree.t"]]), 
+                                       min=therange[1],
+                                       max=therange[2],
+                                       type="standard")
+          }
+          else if( thecall[["Spline"]]== "b-spline" ){
+            if (is.null(thecall[["Degree.t"]])) {thecall[["Degree.t"]]<-3}
+            
+            thespline <- BSplineBasis(knots=c(therange[1],
+                                        eval(as.expression(thecall[["Knots.t"]])), 
+                                        therange[2]),
+                                      degree=ifelse(is.null(thecall[["Degree.t"]]),
+                                        formals(fun)[["Degree.t"]],
+                                        thecall[["Degree.t"]]),
+                                      keep.duplicates=FALSE)
+          }
+		  else if( thecall[["Spline"]]== "m-spline" ){
+			  if (is.null(thecall[["Degree.t"]])) {thecall[["Degree.t"]]<-3}
+			  
+			  thespline <- BSplineBasis(knots=c(therange[1],
+							  eval(as.expression(thecall[["Knots.t"]])), 
+							  therange[2]),
+					  degree=ifelse(is.null(thecall[["Degree.t"]]),
+							  formals(fun)[["Degree.t"]],
+							  thecall[["Degree.t"]]),
+					  keep.duplicates=FALSE)
+		  }
+		  else { 
+            stop("wrong type of spline specification", attr(objterm,"variables")[[i+1]])
+          }
         }
-        else if( thecall[["Spline"]]== "tp-spline" ){
-          thespline <- TPSplineBasis(knots=eval(as.expression(thecall[["Knots.t"]])), 
-                                     degree=ifelse(is.null(thecall[["Degree.t"]]),
-                                       formals(fun)[["Degree.t"]],
-                                       thecall[["Degree.t"]]), 
-                                     min=therange[1],
-                                     max=therange[2],
-                                     type="standard")
-        }
-        else if( thecall[["Spline"]]== "tpi-spline" ){
-          thespline <- TPSplineBasis(knots=eval(as.expression(thecall[["Knots.t"]])), 
-                                     degree=ifelse(is.null(thecall[["Degree.t"]]),
-                                       formals(fun)[["Degree.t"]],
-                                       thecall[["Degree.t"]]), 
-                                     min=therange[1],
-                                     max=therange[2],
-                                     type="standard")
-        }
-        else if( thecall[["Spline"]]== "b-spline" ){
-          if (is.null(thecall[["Degree.t"]])) {thecall[["Degree.t"]]<-3}
-          
-          thespline <- MSplineBasis(knots=c(therange[1],
-                                      eval(as.expression(thecall[["Knots.t"]])), 
-                                      therange[2]),
-                                    degree=ifelse(is.null(thecall[["Degree.t"]]),
-                                      formals(fun)[["Degree.t"]],
-                                      thecall[["Degree.t"]]),
-                                    keep.duplicates=FALSE)
-        }
-        else { 
-          stop("wrong type of spline specification", attr(objterm,"variables")[[i+1]])
-        }
-        var_list <- c( var_list, thevar) 
+		var_list <- c( var_list, thevar) 
         Spline_list <- c( Spline_list, thespline)
-      }
+		}
     }
     names(Spline_list) <- var_list
     return(Spline_list[oindxvar])
