@@ -89,7 +89,7 @@ YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
   }
   
   if(nX + nZ) {
-    NPHterm <- intTD(func=rateTD_bh_alphabeta, T=Y[,1], intToStatus=Y[,2],
+    NPHterm <- intTD(func=rateTD_bh_alphabeta, intTo=Y[,1], intToStatus=Y[,2],
                      step=step, Nstep=Nstep,
                      intweightsfunc=intweightsfunc, 
                      gamma0=gamma0, Zalphabeta=Zalphabeta, 
@@ -98,7 +98,7 @@ YT0Gamma0 <- predictSpline(Spline_t0*tmpgamma0, Y[,1], intercept=Intercept_t0)
                      debug=debug)
   }
   else {
-#    NPHterm <- intTD(func=rateTD_gamma0_bh, Y[,1], intToStatus=Y[,2],
+#    NPHterm <- intTD(func=rateTD_gamma0_bh, intTo=Y[,1], intToStatus=Y[,2],
 #                     step=step, Nstep=Nstep,
 #                     intweightsfunc=intweightsfunc, 
 #                     gamma0=gamma0,

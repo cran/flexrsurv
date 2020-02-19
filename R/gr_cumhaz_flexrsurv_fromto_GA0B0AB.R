@@ -110,7 +110,7 @@ if (debug) cat("# computing gradient of the cumulative hazard: gr_cumhaz_flexrsu
       Intb <- Intb0
     }
     else {
-      Intb <-  intTD_base(func=rateTD_gamma0alphabeta, fromT=Y[,1], toT=Y[,2], intToStatus=Y[,3],
+      Intb <-  intTD_base(func=rateTD_gamma0alphabeta, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
                           Spline=Spline_t,
                           step=step, Nstep=Nstep, intweightsfunc=intweightsfunc,
                           gamma0=GA0B0AB[1:nT0basis], Zalphabeta=Zalphabeta, 

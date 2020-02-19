@@ -1,5 +1,8 @@
 NEWS about R package flexrsurv
 
+Version 1.4.5 - 2020-02-03
+      o minor corrections in help pages
+           
 Version 1.4.4 - 2019-12-05
       o code optimisation
       o S3 methods logLik() et nobs()

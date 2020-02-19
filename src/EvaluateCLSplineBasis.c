@@ -120,7 +120,7 @@ beta : vector of the linear combination
 			else {
 			    mfl = 0;                                                                            
 			    theinterval = findInterval2(rknots, nknots, rxvals[i], 1, 0 , FALSE, theorder, &mfl ); 
-			    if( theinterval > nknots - theorder) {                                                         
+			    if( theinterval > nknots - theorder) {
 				    /* xx[i] is the rightmost boundary knot */
 				    theinterval = nknots - theorder;
 			    }
@@ -178,7 +178,7 @@ double r_eval_lc_spline_basis(double *rknots, R_len_t nknots, R_len_t nbases, R_
 		else {
 			mfl = 0;                                                                            
 			theinterval = findInterval2(rknots, nknots, rxval, 1, 0 , FALSE, theorder, &mfl ); 
-			if( theinterval > nknots - theorder) {                                                    
+			if( theinterval > nknots - theorder) {
 				/* xx[i] is the rightmost boundary knot */
 				theinterval = nknots - theorder;
 			}

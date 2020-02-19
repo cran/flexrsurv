@@ -1,11 +1,3 @@
-# Suppression de l'option "relative" du programme de Remontet.
-# On ne calcule que la survie relative.
-
-#######################################################
-#            UNITE TEMPORELLE : LE MOIS               #
-#######################################################
-
-
 split.data <- function(jeudata, bands, entry, exit, fail, include=names(jeudata), name.runningtime=".t")    
 {
   

@@ -156,9 +156,6 @@ The model \code{method=="additive"} assumes effects as explained in Remontet et 
   \item{debug}{
     control the volum of intermediate output
 }
-  \item{...}{
-    unused arguments
-}
 }
 
 \details{

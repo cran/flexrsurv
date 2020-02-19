@@ -131,7 +131,7 @@ intTDft_WCEbase_NC <- function(func=function(x) return(x), intFrom, intTo,
   #     - NC-4 : Boole intweight_BOOLE(), Nstep = 4 I
   # intToStatus : unused but present for compatibility with inTD_GLM
   # ... : parameters of func()
-  res<-matrix(0, nrow = length(intTo), ncol = Spline@nbases + Spline@log)
+  res<-matrix(0, nrow = length(intTo), ncol = Spline@nbases + Spline@log - (1 - intercept))
   for(i in 1:length(intTo)){
     # vector of evaluated t
     theT <- intFrom[i] + (0:Nstep[i])*step[i]
@@ -140,7 +140,7 @@ intTDft_WCEbase_NC <- function(func=function(x) return(x), intFrom, intTo,
     TBase <- gradientwce(object=Spline, t=theT, Increment=theW, fromT=fromT, tId=rep(i, Nstep[i]+1),
                            FirstId=FirstId, LastId=LastId, intercept=intercept, outer.ok=TRUE)
     # matrix of the evaluated functions (nt row, nfunc col)
-    FF <- func(theT, i, FirstId=FirstId, ...)
+    FF <- func(theT, i, fromT=fromT, FirstId=FirstId, LastId=LastId, ...)
     # weights 1 * nt matrix
     w<-intweightsfunc(Nstep[i])
 
@@ -185,7 +185,7 @@ intTDft_WCEbase_GL <- function(func=function(x) return(x), intFrom, intTo,
     TBase <- gradientwce(object=Spline, t=theT, Increment=theW, fromT=fromT, tId=rep(i, npoints),
                            FirstId=FirstId, LastId=LastId, intercept=intercept, outer.ok=TRUE)
     # matrix of the evaluated functions (nt row, nfunc col)
-    FF <- func(theT, i, FirstId=FirstId, ...)
+    FF <- func(theT, i, fromT=fromT, FirstId=FirstId, LastId=LastId, ...)
 
 # numerical integration
     res[i,] <- crossprod(Nstep*FF, TBase)
@@ -195,7 +195,7 @@ intTDft_WCEbase_GL <- function(func=function(x) return(x), intFrom, intTo,
 
 slowintTDft_WCEbase_NC <- function(func=function(x) return(x), intFrom, intTo, 
                                    Spline, intercept,
-                                   theW, fromT, toT, FirstId,
+                                   theW, fromT, toT, FirstId, LastId,
                                    step, Nstep, intweightsfunc = intweights_CAV_SIM,
                                    intToStatus=NULL,
                                    debug=TRUE,
@@ -227,11 +227,12 @@ slowintTDft_WCEbase_NC <- function(func=function(x) return(x), intFrom, intTo,
       TBase <- TBase +  theW[iId] * fevaluate(Spline, theT-fromT[i], intercept=intercept)
     }
     # matrix of the evaluated functions (nt row, nfunc col)
-    FF <- func(theT, i, FirstId=FirstId, ...)
+    FF <- func(theT, i, fromT=fromT, FirstId=FirstId, LastId=LastId, ...)
     # weights 1 * nt matrix
     w<-intweightsfunc(Nstep[i])
 
 # numerical integration
+    
     res[i,] <- crossprod(w*FF, TBase)
 
   }
@@ -432,7 +433,7 @@ fastintTDft_base2_GLM <- function(func=function(x) return(x), intFrom, intTo, fr
 
 
 
-fastintTDft_WCEbase_GLM <- function(func=function(x) return(x), intFrom, intTo, fromT, toT, FirstId,
+fastintTDft_WCEbase_GLM <- function(func=function(x) return(x), intFrom, intTo, fromT, toT, FirstId, LastId,
                                     Spline, intercept, theW, 
                                     step, Nstep, intweightsfunc=NULL,
                                     intToStatus,
@@ -475,14 +476,14 @@ fastintTDft_WCEbase_GLM <- function(func=function(x) return(x), intFrom, intTo, 
       allTBase <- allTBase +  theW[iId] * fevaluate(Spline, theT-fromT[iId], intercept=intercept)
     }
                                         # vector of the evaluated functions
-        FF <- func(theT, i, FirstId=FirstId, ...)
+        FF <- func(theT, i, fromT=fromT, FirstId=FirstId, LastId=LastId, ...)
 
-        print("theT - fromT")
+#        print("theT - fromT")
 #        print(theT-fromT[i])
-        print("rate FF")
+#        print("rate FF")
 #        print(log(FF))
-        print("allbase")
-        print(cbind(theT-fromT[i], log(FF), allTBase))
+#        print("allbase")
+#        print(cbind(theT-fromT[i], log(FF), allTBase))
                                         # weights
       w<- c(step@cuts[Nstep[i,1]] - intFrom[i],
             step@steps[Nstep[i,1]:Nstep[i,2]],
@@ -502,7 +503,7 @@ fastintTDft_WCEbase_GLM <- function(func=function(x) return(x), intFrom, intTo, 
       allTBase <- allTBase +  theW[iId] * fevaluate(Spline, theT-fromT[iId], intercept=intercept)
     }
                                         # vector of the evaluated functions
-        FF <- func(theT, i, ...)
+        FF <- func(theT, i, fromT=fromT, FirstId=FirstId, LastId=LastId, ...)
                                         # weights
       w<- c(step@cuts[Nstep[i,1]] - intFrom[i],
             intTo[i]-step@cuts[Nstep[i,1]])
@@ -523,7 +524,7 @@ fastintTDft_WCEbase_GLM <- function(func=function(x) return(x), intFrom, intTo, 
       # evaluate spline basis at t - fromT[o]
         allTBase <- allTBase +  theW[iId] * fevaluate(Spline, theT-fromT[iId], intercept=intercept)
       }
-      res[i,] <- (intTo[i]- intFrom[i]) * func(intTo[i], i, ...) %*% allTBase #[,,drop=TRUE]
+      res[i,] <- (intTo[i]- intFrom[i]) * func(intTo[i], i, fromT=fromT, FirstId=FirstId, LastId=LastId, ...) %*% allTBase #[,,drop=TRUE]
     }
   }
   res  
