@@ -67,6 +67,9 @@
 \item{df.residual}{the "\code{df.residual}" component from object.}
 }
 
+\seealso{
+\code{\link{summary}}, \code{\link{flexrsurv}}, \code{\link{flexrsurvclt}}.
+}
 
 
 

@@ -4,7 +4,7 @@
 \alias{flexrsurv}
 \alias{flexrsurv.ll}
 
-\title{ Fit Relative Survival Model}
+\title{Fit Relative Survival Model}
 
 \description{
    \code{flexrsurv} is used to fit relative survival regression model. 
@@ -244,6 +244,8 @@ The model \code{method=="additive"} assumes effects as explained in Remontet et 
 \seealso{
    \code{\link{print.flexrsurv}}, 
    \code{\link{summary.flexrsurv}}, 
+   \code{\link{logLik.flexrsurv}}, 
+   \code{\link{predict.flexrsurv}}, 
 %%   \code{\link{plot.flexrsurv}}, 
    \code{\link{NPH}}, 
    \code{\link{NLL}}, and 

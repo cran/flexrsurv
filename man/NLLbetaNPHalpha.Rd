@@ -5,7 +5,7 @@
 \title{Non Log-Linear effect and non proportional effect}
 
 \description{
-Internal functions not inteded for users. 
+Internal functions not intended for users. 
 }
 
 \usage{
@@ -103,3 +103,4 @@ Internal functions.
    \code{\link[=NPHNLL]{NPHNLL}}.
 }
 
+\keyword{internal}

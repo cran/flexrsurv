@@ -1,0 +1,439 @@
+ll_flexrsurv_fromto_1WCEaddBr0Control<-function(allparam,
+		Y, X0, X, Z, W,
+		BX0,
+		Id, FirstId, LastId,
+		expected_rate,
+		expected_logit_end,
+		expected_logit_enter,
+		weights=NULL,
+		Ycontrol, BX0control, 
+		weightscontrol=NULL,
+		Idcontrol, FirstIdcontrol, LastIdcontrol,
+		expected_ratecontrol,
+		expected_logit_endcontrol,
+		expected_logit_entercontrol,
+		step, Nstep,
+		intTD=intTD_NC, intweightsfunc=intweights_CAV_SIM,
+		intTD_base=intTD_base,
+		intTD_WCEbase=intTD_WCEbase,
+		ialpha0, nX0,
+		ibeta0, nX,
+		ialpha,
+		ibeta,
+		nTbasis,
+		ieta0, iWbeg, iWend, nW, 
+		Spline_t =BSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+		Intercept_t_NPH=rep(TRUE, nX), 
+		ISpline_W =MSplineBasis(knots=NULL,  degree=3,   keep.duplicates=TRUE),
+		Intercept_W=TRUE,
+		nBbasis,
+		Spline_B, Intercept_B=TRUE,
+		ibrass0, nbrass0, 
+		ibalpha0, nBX0,
+		debug=FALSE,  ...){
+	# compute log likelihood of the relative survival model
+	# excess rate =  WCE(W , eta0)(t)exp{ X0%*%alpha0 + X%*%beta0(t) + sum( alphai(zi)betai(t) )}
+	#################################################################################################################
+	#################################################################################################################
+	#  the coef of the first t-basis is constraint to 1 for nat-spline, and n-sum(other beta) if bs using expand() method
+	#################################################################################################################
+	#################################################################################################################
+	#################################################################################################################
+	# allparam ; vector of all coefs
+	# eta0 = allparam[ieta0]
+	# alpha0= allparam[ialpha0]
+	# beta0= matrix(allparam[ibeta0], ncol=nX, nrow=nTbasis)
+	# alpha= diag(allparam[ialpha])
+	# beta= expand(matrix(allparam[ibeta], ncol=Z@nZ, nrow=nTbasis-1))
+	# beta does not contains coef for the first t-basis
+	# brass0 = allparam[ibrass0]
+	# balpha0 = allparam[ibalpha0]
+	
+	
+	# corection of lifetable according to generalized brass method
+	# Cohort-independent generalized Brass model in an age-cohort table
+	# stratified brass model according to fixed effects BX0 (one brass function per combination)
+	# for control group
+	# rate = brass0(expected-ratecontrol, expected_logitcontrol)*exp(BX0control balpha0) 
+	# but for other
+	# rate = brass0(expected-rate, expected_logit)*exp(BX0 balpha0) + exp(gamma0(t) + time-independent effect(LL + NLL)(X0) + NPH(X) + NPHNLL(Z) + WCE(W))
+	# brass0 : BRASS model wiht parameter Spline_B
+	# logit(F) = evaluate(Spline_B, logit(F_pop), brass0) * exp(Balpha %*% BX0)
+	# HCum(t_1, t_2) = log(1 + exp(evaluate(Spline_B, logit(F_pop(t_2)), brass0)) -  log(1 + exp(evaluate(Spline_B, logit(F_pop(t_1)), brass0))
+	# rate(t_1) = rate_ref * (1 + exp(-logit(F_pop(t)))/(1 + exp(evaluate(Spline_B, logit(F_pop(t)), brass0)))*
+	#                        evaluate(deriv(Spline_B), logit(F_pop(t)), brass0)
+	# expected_logit_end =  logit(F_pop(t_2))
+	# expected_logit_enter =  logit(F_pop(t_1))
+	# brass0 = allparam[ibrass0]
+	# Spline_B : object of class "AnySplineBasis" (suitable for Brass model) with method deriv() and evaluate()
+	#            IMPORTANT : the coef of the first basis is constraints to one and evaluate(deriv(spline_B), left_boundary_knots) == 1 for Brass transform 
+	#
+	# parameters for exposed group
+	#################################################################################################################
+	# Y : object of class Surv but the matrix has 4 columns :
+	# Y[,1] beginning(1) , fromT
+	# Y[,2] end(2), toT,
+	# Y[,3] status(3) fail
+	# Y[,4] end of followup(4) 
+	#     end of followup is assumed constant by Id
+	# X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
+	# X : log lineair but time dependante variable 
+	# Z : object of class "DesignMatrixNPHNLL" time dependent variables (spline basis expended)
+	# W : vector or nX1 matrix with ONE Exposure variable used in Weighted Cumulative Exposure Models
+	# BX0 : non-time dependante variable for the correction of life table (may contain spline bases expended for non-loglinear terms)
+	# Id : varibale indicating individuals Id, lines with the same Id are considered to be from the same individual
+	# FirstId : all lines in FirstId[iT]:iT in the data comes from the same individual 
+	# LastId  : all lines in FirstId[iT]:LastId[iT] in the data comes from the same individual Id[iT] 
+	# expected_rate : expected rate at event time T
+	# expected_logit_end : logit of the expected survival at the end of the followup
+	# expected_logit_enter : logit of the expected survival at the beginning of the followup 
+	# weights : vector of weights  : LL = sum_i w_i ll_i
+	# parameters for exposd population
+	#################################################################################################################
+	# parameters for exposed group
+	#################################################################################################################
+	# Ycontrol : object of class Surv but the matrix has 4 columns :
+	# Ycontrol[,1] beginning(1) , fromT
+	# Ycontrol[,2] end(2), toT,
+	# Ycontrol[,3] status(3) fail
+	# Ycontrol[,4] end of followup(4) 
+	#     end of followup is assumed constant by Id
+	# BX0control : non-time dependante variable for the correction of life table (may contain spline bases expended for non-loglinear terms)
+	# Idcontrol : varibale indicating individuals Id, lines with the same Id are considered to be from the same individual
+	# FirstIdcontrol : all lines in FirstIdcontrol[iT]:iT in the data comes from the same individual 
+	# LastIdcontrol  : all lines in FirstId[controliT]:LastIdcontrol[iT] in the data comes from the same individual Id[iT] 
+	# expected_ratecontrol : expected rate at event time T
+	# expected_logit_endcontrol : logit of the expected survival at the end of the followup
+	# expected_logit_entercontrol : logit of the expected survival at the beginning of the followup 
+	# weightscontrol : vector of weights  : LL = sum_i w_i ll_i
+	#################################################################################################################
+	# model parameters
+	# step : object of class "NCLagParam" or "GLMLagParam"
+	# Nstep : number of lag for each observation
+	# intTD : function to perform numerical integration 
+	# intweightfunc : function to compute weightsfor numerical integration
+	# nW    : nb of WCE variables dim(W)=c(nobs, nW)
+	############# nW must be 1 in this function
+	# iWbeg, iWend : coef of the ith WCE variable is eta0[iWbeg[i]:iWend[i]]
+	############# iWbeg = 1 in this finction and ieta0=1:iWend
+	#  ISpline_W, list of nW spline object for WCE effects,  with evaluate() method
+	#             ISpline is already integreted 
+	# nTbasis : number of time spline basis for NPH or NLL effects
+	# nX0   : nb of PH variables dim(X0)=c(nobs, nX0)
+	# nX    : nb of NPHLIN variables dim(X)=c(nobs, nX)
+	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	# Intercept_t_NPH vector of intercept option for NPH spline (=FALSE when X is NLL too, ie in case of remontet additif NLLNPH)
+	#  ... not used args
+	# the function do not check the concorcance between length of parameter vectors and the number of knots and the Z.signature
+	# returned value : the log liikelihood of the model
+	
+#cat("************ll_flexrsurv_fromto_1WCEaddBr0Control ")
+#print(allparam)
+	
+	
+	################################################################################
+#  excess rate
+	if(is.null(Z)){
+		nZ <- 0
+		Zalphabeta <- NULL
+	} else {
+		nZ <- Z@nZ
+	}
+	
+	# contribution of non time dependant variables
+	if( nX0){
+		PHterm <-exp(X0 %*% allparam[ialpha0])
+	} else {
+		PHterm <- 1
+	}
+	# contribution of time d?pendant effect
+	# parenthesis are important for efficiency
+	if(nZ) {
+		# add a row of one for the first T-basis 
+		Beta <- t(ExpandAllCoefBasis(allparam[ibeta], ncol=nZ,  value=1))
+		# parenthesis important for speed ?
+		Zalphabeta <- Z@DM %*%( diag(allparam[ialpha]) %*% Z@signature  %*% Beta )
+		if(nX) {
+			# add a row of 0 for the first T-basis when !Intercept_T_NPH
+			Zalphabeta <- Zalphabeta + X %*% t(ExpandCoefBasis(allparam[ibeta0],
+							ncol=nX,
+							splinebasis=Spline_t,
+							expand=!Intercept_t_NPH,
+							value=0))
+		}
+	} else {
+		if(nX) {
+			Zalphabeta <- X %*% t(ExpandCoefBasis(allparam[ibeta0],
+							ncol=nX,
+							splinebasis=Spline_t,
+							# no log basis for NPH and NPHNLL effects
+							expand=!Intercept_t_NPH,
+							value=0))
+		}
+		else {
+			Zalphabeta <- NULL
+		}
+	}
+	
+	IS_W<- ISpline_W
+	eta0 <- allparam[ieta0]
+	if(Intercept_W){
+		IS_W <- ISpline_W * eta0
+	}
+	else {
+		IS_W <- ISpline_W * c(0, eta0)
+	}
+	
+	if(nX + nZ) {
+		# with time dependent terms in the exp()
+		# NPHTERM is the cumulative rate effect between Tfrom and Tto
+		# numerical integration
+		NPHterm <- intTD(rateTD_alphabeta_1addwce, intFrom=Y[,1], intTo=Y[,2], intToStatus=Y[,3],
+				step=step, Nstep=Nstep,
+				intweightsfunc=intweightsfunc, 
+				fromT=Y[,1], toT=Y[,2], FirstId=FirstId, LastId=LastId,
+				Zalphabeta=Zalphabeta,
+				W = W, 
+				Spline_t = Spline_t, Intercept_t=TRUE,
+				ISpline_W = IS_W, Intercept_W=Intercept_W)
+	} else {
+		# no time dependent terms in the exp()
+		# NPHTERM is the cumulative WCE effect between Tfrom and Tto
+		# algebric formula
+		
+		wce2 <- predictwce(object=integrate(IS_W), t=Y[,2], Increment=W, fromT=Y[,1], tId=(1:dim(Y)[1]),
+				FirstId=FirstId, LastId=LastId, intercept=Intercept_W, outer.ok=TRUE)
+		wce1 <-  predictwce(object=integrate(IS_W), t=Y[,1], Increment=W, fromT=Y[,1], tId=(1:dim(Y)[1]),
+				FirstId=FirstId, LastId=LastId, intercept=Intercept_W, outer.ok=TRUE)
+		NPHterm <- wce2 - wce1
+		
+	}
+	
+	################################################################################
+	################################################################################
+	################################################################################
+	################################################################################
+	################################################################################
+	################################################################################
+	################################################################################
+	################################################################################
+	################################################################################
+	################################################################################
+	################################################################################
+	#****** eventterm : on peut peut-être faire un vecteur de lenght = nombre d'individu (correspondant au fin de suivi des individus)
+	
+	# WCE at end of interval
+	# no eta0 in predictwce() L because IS_W = ISpline_W * eta0
+	WCEevent <- predictwce(object=IS_W, t=Y[,2], Increment=W, fromT=Y[,1], tId=(1:dim(Y)[1]),
+			FirstId=FirstId, LastId=LastId, intercept=Intercept_W, outer.ok=TRUE)
+	
+	
+	################################################################################
+	# control group
+# only Brass model
+	if(!is.null(Ycontrol)){
+		if(is.null(Spline_B)){
+			modified_ratecontrol <-  expected_ratecontrol 
+			modified_cumratecontrol <- log((1 + exp( expected_logit_endcontrol))/(1 + exp(expected_logit_entercontrol)))
+		}
+		else {
+			# parameter of the first basis is one
+			brass0 <- c(1.0, allparam[ibrass0])
+			S_B <- Spline_B * brass0
+			Y2C <- exp(predictSpline(S_B, expected_logit_endcontrol)) 
+			evalderivbrasscontrol <- predictSpline(deriv(S_B), expected_logit_endcontrol) 
+			# contribution of non time dependant variables
+			modified_ratecontrol <-  expected_ratecontrol * (1 + exp(-expected_logit_endcontrol))/(1+ 1/Y2C) * evalderivbrasscontrol
+			modified_cumratecontrol <- log((1 + Y2C)/(1 + exp(predictSpline(S_B, expected_logit_entercontrol))))
+		}
+		if( nBX0){
+			BPHtermcontrol <-exp(BX0control %*% allparam[ibalpha0])
+			modified_ratecontrol <-  modified_ratecontrol * BPHtermcontrol
+			modified_cumratecontrol <- modified_cumratecontrol * BPHtermcontrol  
+		}
+		
+		if(sum(is.na(modified_ratecontrol)) | sum(is.na(modified_cumratecontrol))){
+			warning(paste0(sum(is.na(modified_ratecontrol)), 
+							" NA rate control and ", 
+							sum(is.na(modified_cumratecontrol)), 
+							" NA cumrate control with Brass coef", 
+							paste(format(brass0), collapse = " ")))
+		}
+		if(min(modified_ratecontrol, na.rm=TRUE)<0 | min(modified_cumratecontrol, na.rm=TRUE)<0){
+			warning(paste0(sum(modified_ratecontrol<0, na.rm=TRUE), 
+							" negative rate control and ", 
+							sum(modified_cumratecontrol<0, na.rm=TRUE), 
+							" negative cumrate control with Brass coef", 
+							paste(format(brass0), collapse = " ")))
+		}
+		
+		eventtermcontrol <- ifelse(Ycontrol[,3], log( modified_ratecontrol ),  0)
+		if (!is.null(weightscontrol)) {
+			llcontrol <- crossprod(eventtermcontrol  - modified_cumratecontrol, weightscontrol)
+		}
+		else {
+			llcontrol <- sum( eventtermcontrol - modified_cumratecontrol )
+		}
+		
+	}
+	else {
+		modified_ratecontrol <-  NULL
+		modified_cumratecontrol <- NULL
+		llcontrol <- 0.0
+	}
+	################################################################################
+	# exposed group
+# Brass model
+	
+	if(is.null(Spline_B)){
+		modified_rate <-  expected_rate 
+		modified_cumrate <-log((1 + exp( expected_logit_end))/(1 + exp(expected_logit_enter)))  
+	}
+	else {
+		brass0 <- c(1.0, allparam[ibrass0])
+		S_B <- Spline_B * brass0
+		Y2E <- exp(predictSpline(S_B, expected_logit_end)) 
+		evalderivbrass <- predictSpline(deriv(S_B), expected_logit_end) 
+		
+		# contribution of non time dependant variables
+		
+		modified_rate <-  expected_rate * (1 + exp(-expected_logit_end))/(1+ 1/Y2E) * evalderivbrass
+		modified_cumrate <- log((1 + Y2E)/(1 + exp(predictSpline(S_B, expected_logit_enter))))
+		
+#    print(summary(predictSpline(S_B, expected_logit_enter)))
+#    print(summary(Y2E))
+#    print(brass0)
+	}
+	
+	#proportional corrections
+	if( nBX0){
+		BPHterm <-exp(BX0 %*% allparam[ibalpha0])
+		modified_rate <-  modified_rate  * BPHterm
+		modified_cumrate <- modified_cumrate * BPHterm 
+	}
+	
+	if(sum(is.na(modified_rate)) | sum(is.na(modified_cumrate))){
+		warning(paste0(sum(is.na(modified_rate)), 
+						" NA rate and ", 
+						sum(is.na(modified_cumrate)), 
+						" NA cumrate with Brass coef", 
+						paste(format(brass0), collapse = " ")))
+	}
+	if(min(modified_rate, na.rm=TRUE)<0 | min(modified_cumrate, na.rm=TRUE)<0){
+		warning(paste0(sum(modified_rate<0, na.rm=TRUE), 
+						" negative rate and ", 
+						sum(modified_cumrate<0, na.rm=TRUE), 
+						" negative cumrate with Brass coef", 
+						paste(format(brass0), collapse = " ")))
+	}
+
+	
+	# spline bases for each TD effect
+	if(nX + nZ){
+		# spline bases for each TD effect at the end of the interval
+		YT <- evaluate(Spline_t, Y[,2], intercept=TRUE)
+		eventterm <- ifelse(Y[,3] ,
+				log( modified_rate + PHterm * WCEevent * exp(apply(YT * Zalphabeta, 1, sum))),
+				0)
+	} else {
+#    isneg <- ifelse(Y[,3] , 
+#                        (modified_rate + PHterm * WCEevent) <0, 
+#                        FALSE)
+#    if(sum(isneg)>0){
+#      print(cbind(Id, isneg, Y, modified_rate , PHterm, WCEevent)[isneg,])
+#    }
+		eventterm <- log( ifelse(Y[,3] , 
+						modified_rate + PHterm * WCEevent , 
+						1.0))
+		Eventterm <- ifelse(Y[,3] , 
+				modified_rate + PHterm * WCEevent , 
+				.0)
+	}
+	
+	if (!is.null(weights)) {
+		if( nX0){
+			llexposed <- crossprod(eventterm - modified_cumrate - PHterm * NPHterm , weights)
+		} else {
+			llexposed <- crossprod(eventterm - modified_cumrate - NPHterm , weights)
+		}
+	}
+	else {
+		if( nX0){
+			llexposed <- sum( eventterm - modified_cumrate - PHterm * NPHterm )
+		} else {
+			llexposed <- sum( eventterm - modified_cumrate - NPHterm )
+		}
+	}
+	
+#print(cbind(PHterm, NPHterm, YT0Gamma0))
+#print(c(sum(eventtermcontrol), sum(modified_cumratecontrol), sum(eventterm), sum(modified_cumrate), sum(PHterm * NPHterm), sum(PHterm ), sum(NPHterm)))
+#print(c(nX0, nX, nZ, nW))      
+	
+#print(table(Y[,3]))
+#print(summary((modified_rate + PHterm * WCEevent)[Y[,3]==1]))
+#print(summary((modified_rate + PHterm * WCEevent)[Y[,3]!=1]))
+#  print(sum(eventterm))
+#print("**************** fin ll")
+#  print(summary(modified_cumrate))
+#  print(summary(eventterm))
+#  print(summary(WCEevent))
+	##  print(sum(modified_cumrate))
+	##  print(sum(NPHterm))
+#  print(summary(NPHterm))
+#  print(summary( eventterm - modified_cumrate - NPHterm ))
+#  print(llcontrol)
+#  print(llexposed)
+#  print(allparam)
+#print("fin ll")
+	ret <- llcontrol + llexposed
+#print(c(ret, allparam))
+	
+	
+#  print(c(ret, llcontrol, llexposed))
+	
+	if ( debug) {
+		attr(ret, "eventterm") <- eventterm
+		attr(ret, "PHterm") <- PHterm
+		attr(ret, "NPHterm") <- NPHterm
+		attr(ret, "modified_rate") <- modified_rate
+		attr(ret, "modified_cumrate") <- modified_cumrate
+		attr(ret, "llexposed") <- llexposed
+		attr(ret, "modified_ratecontrol") <- modified_ratecontrol
+		attr(ret, "modified_cumratecontrol") <- modified_cumratecontrol
+		attr(ret, "llcontrol") <- llcontrol
+		if ( debug > 1000) {
+			cat("allparam\n")
+			print(allparam)
+			cat("eventterm\n")
+			print(summary(eventterm[Y[,3]==1]))
+			print(summary(Eventterm[Y[,3]==1]))
+			cat("modified_cumrate\n")
+			print(summary(modified_cumrate[Y[,3]==1]))
+			cat("WCEevent\n")
+			print(summary(WCEevent[Y[,3]==1]  ))
+			cat("rate\n")
+			print(summary(modified_cumrate[Y[,3]==1]-WCEevent[Y[,3]==1]  ))
+			cat("PHterm\n")
+			print(summary(PHterm))
+			cat("NPHterm\n")
+			print(summary(NPHterm ))
+			cat("Y[,3]\n")
+			print(summary(Y[,3] ))
+			cat("modified_rate\n")
+			print(summary( modified_rate ))
+		}
+		if ( debug > 500) {
+			print(allparam)
+			cat("fin ll_flexrsurv_fromto_1WCEaddBr0Control **", ret,   "++ \n")
+			print(c(ret, llcontrol, llexposed))
+		}                          
+	}
+	
+	ret
+}
+
+
+
+
+
+

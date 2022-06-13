@@ -1,5 +1,6 @@
 \name{predict.flexrsurv}
 \alias{predict.flexrsurv}
+\alias{predict.flexrsurvclt}
 
 \title{Predictions for a relative survival model}
 
@@ -60,7 +61,7 @@ To work correctly, arguments \code{Boundary.knots} and
   }
 
   \seealso{
-    \code{\link{predict}},\code{\link{flexrsurv}} }
+    \code{\link{predict}}, \code{\link{flexrsurv}}, \code{\link{flexrsurvclt}}  }
 
 \examples{
 

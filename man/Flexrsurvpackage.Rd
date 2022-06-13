@@ -9,9 +9,10 @@
 Package for flexible relative survival analyses
 }
 \description{
-\code{flexrsurv} is a package for parametric relative survival analyses. The package implements non-linear and 
-non-proportional effects using splines (B-spline and truncated power basis). It also includes 
-both non proportional and non linear effects of Remontet et al. (2007) \doi{10.1002/sim.2656} and 
+\code{flexrsurv} is a package for parametric relative survival analyses. The package implements non-linear, 
+non-proportional effects and both non proportional and non linear effects, using splines (B-spline and truncated power basis), 
+Weighted Cumulative Index of Exposure effect, with correction model for the life table. 
+Both non proportional and non linear effects are described in Remontet et al. (2007) \doi{10.1002/sim.2656} and 
 Mahboubi et al. (2011) \doi{10.1002/sim.4208}. 
 }
 \details{

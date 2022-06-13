@@ -1,5 +1,34 @@
 NEWS about R package flexrsurv
 
+Version 2.0.8 - 2022-06-01
+      o corrections needed for R 4.3
+      
+Version 2.0.7 - 2022-01-28
+      o minor corrections 
+      
+Version 2.0.6 - 2021-12-09
+      o corrections in warning messages
+      o add n, nobs, nevent to returned objects
+      
+Version 2.0.5 - 2021-11-15
+      o update S3 class flexrsurv.mle
+
+Version 2.0.4 - 2021-10-22
+      o new contraints for the parameters of the correction model
+      o new S3 method vcov.flexrsurv 
+
+Version 2.0.3 - 2021-10-04
+      o minor corrections 
+
+Version 2.0.1 - 2020-05-04
+      o period-model for correcting the population life table 
+
+Version 2.0.0 - 2020-15-03
+      o model for correcting the population life table 
+      o weighted cumulative exposure effect
+      o function  to retrieve hazard and cumulative hazard in a table
+
+
 Version 1.4.5 - 2020-02-03
       o minor corrections in help pages
            

@@ -3,33 +3,41 @@ useDynLib(flexrsurv, .registration = TRUE, .fixes = "C_")
 
 export("flexrsurv",
        "flexrsurv.ll",
-	   "print.flexrsurv",
-       "summary.flexrsurv",
-       "print.summary.flexrsurv",
-       "predict.flexrsurv",
-	   "logLik.flexrsurv",
-       "nobs.flexrsurv",
+       "flexrsurvclt",
+       "flexrsurvclt.ll",
+       "ndf.flexrsurvclt",
        "NLL",
        "NPH",
        "NPHNLL",
-	   "NPHalpha", 
-	   "NLLbeta"
-       )
+       "NPHalpha", 
+       "NLLbeta",
+       "WCEI",
+       "getHazardFromTable",
+       "getPseudoHazardFromTable",
+       "getBrassPseudoHazardFromTable"
+       
+              )
 S3method(print, flexrsurv)
 S3method(summary, flexrsurv)
 S3method(print, summary.flexrsurv)
 S3method(predict, flexrsurv)
+S3method(predict, flexrsurvclt)
 S3method(logLik, flexrsurv)
 S3method(nobs, flexrsurv)
+S3method(vcov, flexrsurv)
 
 importFrom("utils", "packageVersion")
 import(methods)
 importFrom(splines, spline.des)
-importFrom(survival, Surv)
+importFrom(survival, Surv, survexp, is.ratetable, survSplit)
 import(stats)
 importFrom(orthogonalsplinebasis, SplineBasis, evaluate )
-importFrom(statmod, gauss.quad )
-import(matrixcalc)
+#import(matrixcalc)
 importFrom(Epi, Lexis, splitLexis)
+import(Formula)
 import(formula.tools)
+importFrom(statmod, gauss.quad )
+importFrom(numDeriv, hessian, jacobian )
+importFrom("R.utils", "extract")
+importFrom("Matrix", sparse.model.matrix, crossprod)
 

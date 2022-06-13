@@ -41,10 +41,10 @@
 
 
 SEXP eval_trunc_power_basis(SEXP knots, SEXP replicates, SEXP min, SEXP max, SEXP order, 
-							SEXP coefs, SEXP degrees, SEXP intercept, SEXP xvals, SEXP outerok)
+		SEXP coefs, SEXP degrees, SEXP intercept, SEXP xvals, SEXP outerok)
 {
-/* evaluate the non-zero truncated power spline basis functions at xvals, */
-/*
+	/* evaluate the non-zero truncated power spline basis functions at xvals, */
+	/*
 knots : vector of ordered unreplicated INTERIOR knots 
 replicates : vector of the number of replicate of knots 
 order : order of the splines
@@ -52,7 +52,7 @@ min, max : working range, outside of [min, max] the value of the bases is 0 if o
 coefs : vector of coef by which each basis is multiplied : b_i(t) = coef[i] * monomial_i(x)
 degrees : vector of the degrees of each monimial : monoial_i(x) = (x  ...)^degrees[i]
 xvals : vector values at which bases are computed
-*/
+	 */
 
 	R_len_t i, j, k, ibase, icoef, nknots, theorder, nbases, nx, oo;
 	R_len_t theinterval, firstbasis, mfl;
@@ -71,7 +71,7 @@ xvals : vector values at which bases are computed
 	PROTECT(intercept = coerceVector(intercept, INTSXP));
 	PROTECT(xvals = coerceVector(xvals, REALSXP));
 	PROTECT(outerok = coerceVector(outerok, LGLSXP));
-	
+
 	rknots = REAL(knots); 
 	nknots = length(knots);
 	rreplicates = REAL(replicates);
@@ -80,7 +80,7 @@ xvals : vector values at which bases are computed
 	rmax = REAL(max)[0];
 
 	rcoefs = REAL(coefs); 
-	
+
 	/* number of bases */
 	nbases = theorder ;	
 	for( i=0; i<nknots;  i++){
@@ -88,14 +88,14 @@ xvals : vector values at which bases are computed
 	}
 	rxvals = REAL(xvals); 
 	nx = length(xvals);
-	
+
 	firstbasis = (INTEGER(intercept)[0]==0);	
-	
+
 	PROTECT(bases = allocMatrix(REALSXP, nx, nbases-firstbasis));
 	rbases = REAL(bases);
-	
+
 	oo = asLogical(outerok);
-	
+
 	if(oo == NA_LOGICAL) {
 		error("'outer.ok' must be TRUE or FALSE");    
 	} else  if (oo) {
@@ -116,16 +116,16 @@ xvals : vector values at which bases are computed
 
 
 SEXP eval_trunc_power_increasing_basis(SEXP knots, SEXP replicates, SEXP min, SEXP max, SEXP order, 
-								SEXP coefs, SEXP degrees, SEXP intercept, SEXP xvals, SEXP outerok)
+		SEXP coefs, SEXP degrees, SEXP intercept, SEXP xvals, SEXP outerok)
 {
-/* evaluate the non-zero truncated power spline basis functions at xvals, */
-/* all the bases are increasing functions.
+	/* evaluate the non-zero truncated power spline basis functions at xvals, */
+	/* all the bases are increasing functions.
 for truncated bases, 
 	if knots[i] => 0, bi = (x - knotq[i])^i if x>= knots[i], bi = 0 if x<knots[i]
 	if knots[i] => 0, bi = -(knotq[i]-x)^i if x<= knots[i], bi = 0 if x>knots[i]
 
-*/
-/*
+	 */
+	/*
 knots : vector of ordered unreplicated INTERIOR knots 
 replicates : vector of the number of replicate of knots 
 order : order of the splines
@@ -134,7 +134,7 @@ coefs : vector of coef by which each basis is multiplied : b_i(t) = coef[i] * mo
         coefs include scaling due to integration/derivation
 degrees : vector of the degrees of each monimial : monoial_i(x) = (x  ...)^degrees[i]
 xvals : vector values at which bases are computed
-*/
+	 */
 
 	R_len_t i, j, k, ibase, icoef, nknots, theorder, nbases, nx, oo;
 	R_len_t theinterval, firstbasis, mfl;
@@ -153,7 +153,7 @@ xvals : vector values at which bases are computed
 	PROTECT(intercept = coerceVector(intercept, INTSXP));
 	PROTECT(xvals = coerceVector(xvals, REALSXP));
 	PROTECT(outerok = coerceVector(outerok, LGLSXP));
-	
+
 	rknots = REAL(knots); 
 	nknots = length(knots);
 	rreplicates = REAL(replicates);
@@ -162,7 +162,7 @@ xvals : vector values at which bases are computed
 	rmax = REAL(max)[0];
 
 	rcoefs = REAL(coefs); 
-	
+
 	/* number of bases */
 	nbases = theorder;	
 	for( i=0; i<nknots;  i++){
@@ -170,14 +170,14 @@ xvals : vector values at which bases are computed
 	}
 	rxvals = REAL(xvals); 
 	nx = length(xvals);
-	
+
 	firstbasis = (INTEGER(intercept)[0]==0);	
-	
+
 	PROTECT(bases = allocMatrix(REALSXP, nx, nbases-firstbasis));
 	rbases = REAL(bases);
-	
+
 	oo = asLogical(outerok);
-	
+
 	if(oo == NA_LOGICAL) {
 		error("'outer.ok' must be TRUE or FALSE");    
 	} else  if (oo) {
@@ -189,7 +189,7 @@ xvals : vector values at which bases are computed
 	for(i = 0; i < nx; i++) {
 		EVALUATE_one_trunc_power_increasing_basis (rxvals[i], rbases, i + nx *)   ;
 	}
-	
+
 	unprotect(11);
 	return(bases);
 }

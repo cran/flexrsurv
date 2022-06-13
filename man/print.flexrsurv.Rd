@@ -28,7 +28,7 @@ estimated coeficients and the log likelihood.
 
 \seealso{
    The default method \code{\link{print.default}}, and help for the
-function \code{\link{flexrsurv}}.
+function \code{\link{flexrsurv}}, \code{\link{flexrsurvclt}}.
 
 }
 

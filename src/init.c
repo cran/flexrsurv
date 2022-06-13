@@ -28,41 +28,44 @@
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
 static const R_CallMethodDef callMethods[] = {
-     CALLDEF(eval_spline_basis, 6),
-     CALLDEF(eval_linex_spline_basis, 9),
-     CALLDEF(eval_trunc_power_basis, 10),
-     CALLDEF(eval_trunc_power_increasing_basis, 10),
-     CALLDEF(eval_lc_spline_basis, 7),
-     CALLDEF(eval_lc_linex_spline_basis, 9),
-     CALLDEF(eval_lc_trunc_power_basis, 11),
-     CALLDEF(eval_lc_trunc_power_increasing_basis, 11),
-     CALLDEF(slow_predict_spline_basis, 6),
-     CALLDEF(predict_spline_basis, 6),
-     CALLDEF(slow_predict_linex_spline_basis, 9),
-     CALLDEF(predict_linex_spline_basis, 9),
-     CALLDEF(predict_trunc_power_increasing_basis, 10),
-     CALLDEF(predict_trunc_power_basis, 10),
-     CALLDEF(predict_wce_spline_basis, 11),
-     CALLDEF(predict_wce_espline_basis, 10),
-     CALLDEF(predict_wce_trunc_power_basis, 15),
-     CALLDEF(grad_wce_spline_basis, 11),
-     CALLDEF(grad_wce_espline_basis, 10),
-     CALLDEF(grad_wce_trunc_power_basis, 15),
-    {NULL, NULL, 0}
+		CALLDEF(eval_spline_basis, 6),
+		CALLDEF(eval_linex_spline_basis, 9),
+		CALLDEF(eval_trunc_power_basis, 10),
+		CALLDEF(eval_trunc_power_increasing_basis, 10),
+		CALLDEF(eval_lc_spline_basis, 7),
+		CALLDEF(eval_lc_linex_spline_basis, 9),
+		CALLDEF(eval_lc_trunc_power_basis, 11),
+		CALLDEF(eval_lc_trunc_power_increasing_basis, 11),
+		CALLDEF(slow_predict_spline_basis, 6),
+		CALLDEF(predict_spline_basis, 6),
+		CALLDEF(slow_predict_linex_spline_basis, 9),
+		CALLDEF(predict_linex_spline_basis, 9),
+		CALLDEF(predict_trunc_power_increasing_basis, 10),
+		CALLDEF(predict_trunc_power_basis, 10),
+		CALLDEF(predict_wce_spline_basis, 11),
+		CALLDEF(predict_wce_espline_basis, 10),
+		CALLDEF(predict_wce_trunc_power_basis, 15),
+		CALLDEF(grad_wce_spline_basis, 11),
+		CALLDEF(grad_wce_espline_basis, 10),
+		CALLDEF(grad_wce_trunc_power_basis, 15),
+		CALLDEF(intTDft_NC, 8),
+		CALLDEF(intTDftbase_NC, 10),
+		CALLDEF(intTDftwcebase_NC, 10),
+		{NULL, NULL, 0}
 
 };
 
 
 void R_init_flexrsurv(DllInfo *info)
 {
-/* Register the .Call routines.
+	/* Register the .Call routines.
 No  .C() .Fortran() or .External() routines,
 so pass those arrays as NULL.
-*/
+	 */
 	R_registerRoutines(info, 
-			   NULL, 
-			   callMethods,
-			   NULL, NULL);
+			NULL,
+			callMethods,
+			NULL, NULL);
 	R_useDynamicSymbols(info, FALSE);
 	R_forceSymbols(info, TRUE);
 }

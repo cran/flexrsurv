@@ -1,8 +1,8 @@
 Package: flexrsurv
 Type: Package
 Title: Flexible Relative Survival Analysis
-Version: 1.4.5
-Date: 2020-02-03
+Version: 2.0.8
+Date: 2022-06-01
 Authors@R: c(
     person("Isabelle", "Clerc-Urmès", role="aut"), 
     person("Michel", "Grzebyk", role = c("aut", "cre"), email = "michel.grzebyk@inrs.fr"),
@@ -15,16 +15,17 @@ Author: Isabelle Clerc-Urmès [aut],
   CENSUR working survival group [ctb]
 Maintainer: Michel Grzebyk <michel.grzebyk@inrs.fr>
 Description: Package for parametric relative survival analyses. It allows to model non-linear and 
-        non-proportional effects using splines (B-spline and truncated power basis). It also includes 
-        both non proportional and non linear effects of 
-			Remontet, L. et al. (2007) <DOI:10.1002/sim.2656> and 
-			Mahboubi, A. et al. (2011) <DOI:10.1002/sim.4208>. 
+        non-proportional effects and both non proportional and non linear effects, using splines (B-spline and truncated power basis), Weighted Cumulative Index of Exposure effect, with correction model for 
+        the life table. Both non proportional and non linear effects are described in 
+			Remontet, L. et al. (2007) <doi:10.1002/sim.2656> and 
+			Mahboubi, A. et al. (2011) <doi:10.1002/sim.4208>. 
 License: GPL (>= 2.0)
-Depends: methods, survival, stats, matrixcalc, Epi, formula.tools
-Suggests: relsurv, ggplot2
-Imports: utils, orthogonalsplinebasis, statmod
+Depends: survival
+Suggests: relsurv, mexhaz, ggplot2, date, lubridate
+Imports: utils, orthogonalsplinebasis, methods, stats, Epi, Formula,
+        formula.tools, splines, statmod, numDeriv, R.utils, Matrix
 Encoding: latin1
 NeedsCompilation: yes
-Packaged: 2020-02-03 14:01:01 UTC; michel.grzebyk
+Packaged: 2022-06-03 11:36:19 UTC; michel.grzebyk
 Repository: CRAN
-Date/Publication: 2020-02-19 07:40:02 UTC
+Date/Publication: 2022-06-13 15:30:06 UTC
