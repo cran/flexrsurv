@@ -67,74 +67,76 @@ To work correctly, arguments \code{Boundary.knots} and
 
 \donttest{
 
-# data from package relsurv
-data(rdata, package="relsurv")
+if (requireNamespace("relsurv", quietly = TRUE)) {
 
-# rate table from package relsurv
-data(slopop, package="relsurv")
-
-
-# get the death rate at event (or end of followup) from slopop for rdata
-rdata$iage <- findInterval(rdata$age*365.24+rdata$time, attr(slopop, "cutpoints")[[1]])
-rdata$iyear <- findInterval(rdata$year+rdata$time, attr(slopop, "cutpoints")[[2]])
-therate <- rep(-1, dim(rdata)[1])
-for( i in 1:dim(rdata)[1]){
-  therate[i] <- slopop[rdata$iage[i], rdata$iyear[i], rdata$sex[i]]
+	# data from package relsurv
+	data(rdata, package="relsurv")
+	
+	# rate table from package relsurv
+	data(slopop, package="relsurv")
+	
+	
+	# get the death rate at event (or end of followup) from slopop for rdata
+	rdata$iage <- findInterval(rdata$age*365.24+rdata$time, attr(slopop, "cutpoints")[[1]])
+	rdata$iyear <- findInterval(rdata$year+rdata$time, attr(slopop, "cutpoints")[[2]])
+	therate <- rep(-1, dim(rdata)[1])
+	for( i in 1:dim(rdata)[1]){
+	  therate[i] <- slopop[rdata$iage[i], rdata$iyear[i], rdata$sex[i]]
+	}
+	
+	rdata$slorate <- therate
+	
+	# change sex coding
+	rdata$sex01 <- rdata$sex -1
+	# centering age
+	rdata$agec <- rdata$age- 60
+	
+	# fit a relative survival model with a non linear effect of age
+	fit <- flexrsurv(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
+	                                           Boundary.knots = c(24, 95)), 
+	                 rate=slorate, data=rdata,
+	                 knots.Bh=1850,  # one interior knot at 5 years
+	                 degree.Bh=3,
+	                 Spline = "b-spline",
+	                 initbyglm=TRUE, 
+	                 int_meth= "BOOLE",
+	                 step=50
+	                 )
+	summary(fit, correlation=TRUE)
+	
+	
+	
+	newrdata <- rdata
+	newrdata$age <- rep(60, length(rdata$age))
+	newrdata$sex <- factor(newrdata$sex, labels=c("m", "f"))
+	
+	
+	
+	linpred <- predict(fit, newdata=newrdata, type="lp", se.fit=TRUE )
+	predhazard <- predict(fit, newdata=newrdata, type="hazard" , se.fit=TRUE )
+	predcumhazard <- predict(fit, newdata=newrdata, type="cum", se.fit=TRUE)
+	
+	
+	require(ggplot2)
+	tmp <- cbind(newrdata, linpred)
+	glp <- ggplot(tmp, aes(time, colour=sex))
+	glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
+	   geom_line(aes(y=fit)) +
+	   scale_fill_manual(values = alpha(c("blue", "red"), .3))
+	
+	
+	tmp <- cbind(newrdata, predhazard)
+	glp <- ggplot(tmp, aes(time, colour=sex))
+	glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
+	   geom_line(aes(y=fit))  +
+	   scale_fill_manual(values = alpha(c("blue", "red"), .3))
+	
+	
+	tmp <- cbind(newrdata, predcumhazard)
+	glp <- ggplot(tmp, aes(time, colour=sex))
+	glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
+	   geom_line(aes(y=fit)) +
+	   scale_fill_manual(values = alpha(c("blue", "red"), .3))
 }
-
-rdata$slorate <- therate
-
-# change sex coding
-rdata$sex01 <- rdata$sex -1
-# centering age
-rdata$agec <- rdata$age- 60
-
-# fit a relative survival model with a non linear effect of age
-fit <- flexrsurv(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
-                                           Boundary.knots = c(24, 95)), 
-                 rate=slorate, data=rdata,
-                 knots.Bh=1850,  # one interior knot at 5 years
-                 degree.Bh=3,
-                 Spline = "b-spline",
-                 initbyglm=TRUE, 
-                 int_meth= "BOOLE",
-                 step=50
-                 )
-summary(fit, correlation=TRUE)
-
-
-
-newrdata <- rdata
-newrdata$age <- rep(60, length(rdata$age))
-newrdata$sex <- factor(newrdata$sex, labels=c("m", "f"))
-
-
-
-linpred <- predict(fit, newdata=newrdata, type="lp", se.fit=TRUE )
-predhazard <- predict(fit, newdata=newrdata, type="hazard" , se.fit=TRUE )
-predcumhazard <- predict(fit, newdata=newrdata, type="cum", se.fit=TRUE)
-
-
-require(ggplot2)
-tmp <- cbind(newrdata, linpred)
-glp <- ggplot(tmp, aes(time, colour=sex))
-glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
-   geom_line(aes(y=fit)) +
-   scale_fill_manual(values = alpha(c("blue", "red"), .3))
-
-
-tmp <- cbind(newrdata, predhazard)
-glp <- ggplot(tmp, aes(time, colour=sex))
-glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
-   geom_line(aes(y=fit))  +
-   scale_fill_manual(values = alpha(c("blue", "red"), .3))
-
-
-tmp <- cbind(newrdata, predcumhazard)
-glp <- ggplot(tmp, aes(time, colour=sex))
-glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
-   geom_line(aes(y=fit)) +
-   scale_fill_manual(values = alpha(c("blue", "red"), .3))
-
 }
 }

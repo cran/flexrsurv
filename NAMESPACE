@@ -14,8 +14,8 @@ export("flexrsurv",
        "WCEI",
        "getHazardFromTable",
        "getPseudoHazardFromTable",
-       "getBrassPseudoHazardFromTable"
-       
+       "getBrassPseudoHazardFromTable",
+		predictCLT       
               )
 S3method(print, flexrsurv)
 S3method(summary, flexrsurv)
@@ -25,6 +25,9 @@ S3method(predict, flexrsurvclt)
 S3method(logLik, flexrsurv)
 S3method(nobs, flexrsurv)
 S3method(vcov, flexrsurv)
+S3method(predictCLT, default)
+S3method(predictCLT, flexrsurvclt)
+
 
 importFrom("utils", "packageVersion")
 import(methods)

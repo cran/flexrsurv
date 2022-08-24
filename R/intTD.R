@@ -111,6 +111,7 @@ intTD_GL <- function(func=function(x) x, intTo,
 	# intToStatus : unused but present for compatibility with inTD_GLM
 	res<-vector("numeric", length(intTo))
 	# from  0 to intTo then (b-a)/2 = (b+a)/2 = intTo/2
+	# evaluation points are (b-a)/2 * step + (b+a)/2 = intTo/2 * step + intTo/2 = intTo/2 * (step + 1)
 	intTo2 <- intTo/2
 	step1 <- step+1
 	for(i in 1:length(intTo)){

@@ -143,6 +143,7 @@ intTDft_GL <- function(func=function(x) x, intFrom, intTo,
 	# Nstep : weights of the quadrature
 	# intweightfunc : unused
 	# intToStatus : unused but present for compatibility with inTD_GLM
+	# evaluation points are (b-a)/2 * step + (b+a)/2 =  dT * step + Tmid
 	res<-vector("numeric", length(intTo))
 	Tmid <- (intTo + intFrom)/2
 	dT   <- (intTo - intFrom)/2

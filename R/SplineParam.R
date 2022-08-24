@@ -427,73 +427,80 @@ R2BSplineBasis2<-function(knots, degree=3, keep.duplicates=FALSE, log=FALSE) {
 	
 # build the complete LEMSplniBasis
 	tmpobj <- LEBSplineBasis(knots=knots, degree=degree, keep.duplicates=keep.duplicates, log=FALSE) 
-	
-	# add the constraint + 2nd derivative at boundaries == 0)
-	
-# number of "interior" bases (appart from P and Q matrices with dim 3  
-	nbinside <- getNBases(tmpobj)-2*3
-	if( nbinside < -1 ){
-		stop("unable to build R2BSplineBasis")
-	} else {
-		# at left
-		der_inf <- evaluate(deriv(deriv(tmpobj)), knots[1, drop=FALSE])[1,1:3, drop=TRUE]
-		d0 <- c(t(der_inf[1:2])%*%der_inf[1:2])
-		
-#	beta <- ifelse(abs(der_inf[3]-1)< 1e-6, -1, 1)
-		beta <- -d0/der_inf[3]
-		
-		d2 <- (beta-der_inf[3])*d0
-		P <- cbind(der_inf, c(-der_inf[2], der_inf[1], 0), c(der_inf[1:2], beta))
-		PP <- P %*% diag(1/sqrt(diag(t(P)%*%P)))
-		invPP <- t(PP)
-		invP <- cbind(rbind(c( der_inf[1],  der_inf[2]), 
-						c(-der_inf[2],  der_inf[1]), 
-						c(-der_inf[1], -der_inf[2])) * c(beta, beta-der_inf[3], der_inf[3]),
-				c(-d0, 0, d0)) /d2
-		# at right3*2.5/4
-		
-		der_sup <- evaluate(deriv(deriv(tmpobj)), knots[length(knots)])[1, getNBases(tmpobj) - (3:1) + 1]
-		d0 <- c(t(der_sup[3:2])%*%der_sup[3:2])
-#	beta <- ifelse(abs(der_sup[1]-1)<1e-6, -1, 1)
-		beta <- -d0/der_sup[1]
-		
-		d2 <- (beta-der_sup[1])*d0
-		Q <- cbind(c(beta, der_sup[2:3]), c(0, der_sup[3], -der_sup[2]), der_sup )
-		QQ <- Q %*% diag(1/sqrt(diag(t(Q)%*%Q)))
-		invQQ <- t(QQ)
-		invQ <- cbind(c(d0, 0, -d0), 
-				rbind(c(-der_sup[2], -der_sup[3]), 
-						c(der_sup[3],  -der_sup[2]), 
-						c( der_sup[2],  der_sup[3])) * c(der_sup[1], beta-der_sup[1], beta)
-		) /d2
-		
-		if( nbinside == -1 ){
-			# restricted cubic spline with one interior knot
-			# P[3,3] == Q[1,1]==1
-			inv_change_basis <- rbind( cbind( diag(2),                   matrix(0, ncol=3, nrow=2)),
-					cbind( matrix(0, ncol=2, nrow=3), Q))
-			
-			inv_change_basis[1:3, 1:3] <- PP
-			change_basis <- solve(inv_change_basis)
-		}
-		else if( nbinside ==0 ){
-			inv_change_basis <- rbind( cbind( PP                        , matrix(0, ncol=3, nrow=3)),
-					cbind( matrix(0, ncol=3, nrow=3), QQ))
-			change_basis <- rbind( cbind( invPP                        , matrix(0, ncol=3, nrow=3)),
-					cbind( matrix(0, ncol=3, nrow=3), invQQ))
-		}
-		else {
-			inv_change_basis <- rbind( cbind( PP                      , matrix(0, ncol=nbinside, nrow=3), matrix(0, ncol=3, nrow=3)),
-					cbind( matrix(0, ncol=3, nrow=nbinside), diag(nbinside)                  , matrix(0, ncol=3, nrow=nbinside)),
-					cbind( matrix(0, ncol=3, nrow=3), matrix(0, ncol=nbinside, nrow=3), QQ))
-			change_basis <- rbind( cbind( invPP                      , matrix(0, ncol=nbinside, nrow=3), matrix(0, ncol=3, nrow=3)),
-					cbind( matrix(0, ncol=3, nrow=nbinside), diag(nbinside)                  , matrix(0, ncol=3, nrow=nbinside)),
-					cbind( matrix(0, ncol=3, nrow=3), matrix(0, ncol=nbinside, nrow=3), invQQ))
-		}
+
+	if ( degree == 1) {
+#			stop("R2BSplineBasis2: restricted spline with degree 1 not yet implemented")
+		# derive(deriv(tmpobj) = 0
+		newobj <- tmpobj
 	}
-	
-	newobj <- (change_basis[ -c(1, getNBases(tmpobj)), ]) %*% tmpobj
-	
+	else {
+		
+		# add the constraint + 2nd derivative at boundaries == 0)
+		
+# number of "interior" bases (appart from P and Q matrices with dim 3 
+		nbinside <- getNBases(tmpobj)-2*3
+		if( nbinside < -1 | degree < 1){
+			stop("unable to build R2BSplineBasis")
+		} else {
+			# at left
+			der_inf <- evaluate(deriv(deriv(tmpobj)), knots[1, drop=FALSE])[1,1:3, drop=TRUE]
+			d0 <- c(t(der_inf[1:2])%*%der_inf[1:2])
+			
+#	beta <- ifelse(abs(der_inf[3]-1)< 1e-6, -1, 1)
+			beta <- -d0/der_inf[3]
+			
+			d2 <- (beta-der_inf[3])*d0
+			P <- cbind(der_inf, c(-der_inf[2], der_inf[1], 0), c(der_inf[1:2], beta))
+			PP <- P %*% diag(1/sqrt(diag(t(P)%*%P)))
+			invPP <- t(PP)
+			invP <- cbind(rbind(c( der_inf[1],  der_inf[2]), 
+							c(-der_inf[2],  der_inf[1]), 
+							c(-der_inf[1], -der_inf[2])) * c(beta, beta-der_inf[3], der_inf[3]),
+					c(-d0, 0, d0)) /d2
+			# at right3*2.5/4
+			
+			der_sup <- evaluate(deriv(deriv(tmpobj)), knots[length(knots)])[1, getNBases(tmpobj) - (3:1) + 1]
+			d0 <- c(t(der_sup[3:2])%*%der_sup[3:2])
+#	beta <- ifelse(abs(der_sup[1]-1)<1e-6, -1, 1)
+			beta <- -d0/der_sup[1]
+			
+			d2 <- (beta-der_sup[1])*d0
+			Q <- cbind(c(beta, der_sup[2:3]), c(0, der_sup[3], -der_sup[2]), der_sup )
+			QQ <- Q %*% diag(1/sqrt(diag(t(Q)%*%Q)))
+			invQQ <- t(QQ)
+			invQ <- cbind(c(d0, 0, -d0), 
+					rbind(c(-der_sup[2], -der_sup[3]), 
+							c(der_sup[3],  -der_sup[2]), 
+							c( der_sup[2],  der_sup[3])) * c(der_sup[1], beta-der_sup[1], beta)
+			) /d2
+			
+			if( nbinside == -1 ){
+				# restricted cubic spline with one interior knot
+				# P[3,3] == Q[1,1]==1
+				inv_change_basis <- rbind( cbind( diag(2),                   matrix(0, ncol=3, nrow=2)),
+						cbind( matrix(0, ncol=2, nrow=3), Q))
+				
+				inv_change_basis[1:3, 1:3] <- PP
+				change_basis <- solve(inv_change_basis)
+			}
+			else if( nbinside ==0 ){
+				inv_change_basis <- rbind( cbind( PP                        , matrix(0, ncol=3, nrow=3)),
+						cbind( matrix(0, ncol=3, nrow=3), QQ))
+				change_basis <- rbind( cbind( invPP                        , matrix(0, ncol=3, nrow=3)),
+						cbind( matrix(0, ncol=3, nrow=3), invQQ))
+			}
+			else {
+				inv_change_basis <- rbind( cbind( PP                      , matrix(0, ncol=nbinside, nrow=3), matrix(0, ncol=3, nrow=3)),
+						cbind( matrix(0, ncol=3, nrow=nbinside), diag(nbinside)                  , matrix(0, ncol=3, nrow=nbinside)),
+						cbind( matrix(0, ncol=3, nrow=3), matrix(0, ncol=nbinside, nrow=3), QQ))
+				change_basis <- rbind( cbind( invPP                      , matrix(0, ncol=nbinside, nrow=3), matrix(0, ncol=3, nrow=3)),
+						cbind( matrix(0, ncol=3, nrow=nbinside), diag(nbinside)                  , matrix(0, ncol=3, nrow=nbinside)),
+						cbind( matrix(0, ncol=3, nrow=3), matrix(0, ncol=nbinside, nrow=3), invQQ))
+			}
+		}
+		
+		newobj <- (change_basis[ -c(1, getNBases(tmpobj)), ]) %*% tmpobj
+	}
 	class(newobj) <- "R2BSplineBasis"
 	
 	newobj
@@ -827,9 +834,12 @@ R2bBSplineBasis<-function(knots,
 # if firstlinear=TRUE, the first basis is the linear basis, the second is the constant basis (the reverse at the right bounday)
 # if firstlinear=FALSE,the second basis is the linear basis, the first is the constant basis (the reverse at the right bounday)
 	
+	if(degree < 1){
+		stop("unable to build R2bBSplineBasis with degree 0")
+	}
 	
 	
-# build the complete LEMSplniBasis
+# build the complete LEBSplineBasis with null second derivative at 2 firts bases (and 2 lasts bases)
 	tmpobj <- R2BSplineBasis2(knots=knots,
 			degree=degree,
 			keep.duplicates=keep.duplicates,
@@ -967,76 +977,83 @@ R2bBSplineBasis2<-function(knots, degree=3, keep.duplicates=FALSE, log=FALSE) {
 	if( nbinside < -1 ){
 		stop("unable to build R2bBSplineBasis")
 	} else {
-		# at left
-		der_inf <- evaluate(deriv(tmpobj), knots[1])[1, 1:2]
-		P <- cbind(der_inf[2:1], c(-der_inf[1], der_inf[2]))
-		
-		
-		# at right
-		der_sup <- evaluate(deriv(tmpobj), knots[length(knots)])[1, getNBases(tmpobj) - (2:1) + 1]
-		Q <- cbind(c(der_sup[1] , -der_sup[2]), der_sup[2:1])
-		
-		if( nbinside == -1 ){
-			# restricted cubic spline with one interior knot
-			# ei, di, es ds are 1 X 3 matrix
-			ei <- c(evaluate(tmpobj,  knots[1]))
-			di <- c(evaluate(deriv(tmpobj), knots[1]))
-			
-			es <- c(evaluate(tmpobj,  knots[length(knots)]))
-			ds <- c(evaluate(deriv(tmpobj), knots[length(knots)]))
-			
-			# P1, P2, P3 sont des vector
-			P1 <- c(ei[2]*ds[3]-ei[3]*ds[2],
-					ei[3]*ds[1]-ei[1]*ds[3],
-					ei[1]*ds[2]-ei[2]*ds[1])
-#      P1 <- P1/sqrt(t(P1)%*%P1)
-			
-			P3 <- c(ei[2]*di[3]-ei[3]*di[2],
-					ei[3]*di[1]-ei[1]*di[3],
-					ei[1]*di[2]-ei[2]*di[1])
-#      P3 <- P3/sqrt(t(P3)%*%P3)
-			
-			P2 <- c(di[2]*ds[3]-di[3]*ds[2],
-					di[3]*ds[1]-di[1]*ds[3],
-					di[1]*ds[2]-di[2]*ds[1])
-#      P2 <- P2/sqrt(t(P2)%*%P2)
-			
-			# first derivative of first basis at min knot = 1
-			d1 <- c(di%*%P1)
-			P1 <- P1/d1
-			if (d1<0){
-				P1 <- -P1
-			}
-			
-			# value of first basis at min knot = 1
-			d2 <- c(ei%*%P2)
-			P2 <- P2/d2
-			if (d2 <0){
-				P2 <- -P2
-			}
-			
-			# first derivative of first basis at max knot = 1
-			d3 <- c(ds%*%P3)
-			P3 <- P3/d3
-			if (d3 < 0){
-				P3 <- -P3
-			}
-			
-			
-			change_basis<- rbind(P1, P2, P3)
-		}
-		else if( nbinside ==0 ){
-			change_basis <- rbind( cbind( P                        , matrix(0, ncol=2, nrow=2)),
-					cbind( matrix(0, ncol=2, nrow=2), Q))
+		if ( degree == 1) {
+#			stop("R2bBSplineBasis2: restricted spline with degree 1 not yet implemented")
+			# derive(deriv(tmpobj) = 0
+			newobj <- tmpobj
 		}
 		else {
-			change_basis <- rbind( cbind( P                      , matrix(0, ncol=nbinside, nrow=2), matrix(0, ncol=2, nrow=2)),
-					cbind( matrix(0, ncol=2, nrow=nbinside), diag(nbinside)                  , matrix(0, ncol=2, nrow=nbinside)),
-					cbind( matrix(0, ncol=2, nrow=2), matrix(0, ncol=nbinside, nrow=2), Q))
+			# at left
+			der_inf <- evaluate(deriv(tmpobj), knots[1])[1, 1:2]
+			P <- cbind(der_inf[2:1], c(-der_inf[1], der_inf[2]))
+			
+			
+			# at right
+			der_sup <- evaluate(deriv(tmpobj), knots[length(knots)])[1, getNBases(tmpobj) - (2:1) + 1]
+			Q <- cbind(c(der_sup[1] , -der_sup[2]), der_sup[2:1])
+			
+			if( nbinside == -1 ){
+				# restricted cubic spline with one interior knot
+				# ei, di, es ds are 1 X 3 matrix
+				ei <- c(evaluate(tmpobj,  knots[1]))
+				di <- c(evaluate(deriv(tmpobj), knots[1]))
+				
+				es <- c(evaluate(tmpobj,  knots[length(knots)]))
+				ds <- c(evaluate(deriv(tmpobj), knots[length(knots)]))
+				
+				# P1, P2, P3 sont des vector
+				P1 <- c(ei[2]*ds[3]-ei[3]*ds[2],
+						ei[3]*ds[1]-ei[1]*ds[3],
+						ei[1]*ds[2]-ei[2]*ds[1])
+#      P1 <- P1/sqrt(t(P1)%*%P1)
+				
+				P3 <- c(ei[2]*di[3]-ei[3]*di[2],
+						ei[3]*di[1]-ei[1]*di[3],
+						ei[1]*di[2]-ei[2]*di[1])
+#      P3 <- P3/sqrt(t(P3)%*%P3)
+				
+				P2 <- c(di[2]*ds[3]-di[3]*ds[2],
+						di[3]*ds[1]-di[1]*ds[3],
+						di[1]*ds[2]-di[2]*ds[1])
+#      P2 <- P2/sqrt(t(P2)%*%P2)
+				
+				# first derivative of first basis at min knot = 1
+				d1 <- c(di%*%P1)
+				P1 <- P1/d1
+				if (d1<0){
+					P1 <- -P1
+				}
+				
+				# value of first basis at min knot = 1
+				d2 <- c(ei%*%P2)
+				P2 <- P2/d2
+				if (d2 <0){
+					P2 <- -P2
+				}
+				
+				# first derivative of first basis at max knot = 1
+				d3 <- c(ds%*%P3)
+				P3 <- P3/d3
+				if (d3 < 0){
+					P3 <- -P3
+				}
+				
+				
+				change_basis<- rbind(P1, P2, P3)
+			}
+			else if( nbinside ==0 ){
+				change_basis <- rbind( cbind( P                        , matrix(0, ncol=2, nrow=2)),
+						cbind( matrix(0, ncol=2, nrow=2), Q))
+			}
+			else {
+				change_basis <- rbind( cbind( P                      , matrix(0, ncol=nbinside, nrow=2), matrix(0, ncol=2, nrow=2)),
+						cbind( matrix(0, ncol=2, nrow=nbinside), diag(nbinside)                  , matrix(0, ncol=2, nrow=nbinside)),
+						cbind( matrix(0, ncol=2, nrow=2), matrix(0, ncol=nbinside, nrow=2), Q))
+			}
 		}
+		
+		newobj <- change_basis %*% tmpobj
 	}
-	
-	newobj <- change_basis %*% tmpobj
 	
 	class(newobj) <- "R2bBSplineBasis"
 	
@@ -2892,8 +2909,8 @@ deriv.LEBSplineBasis<-function(expr){
 			degree=as.integer(SB@order-1), nbases=as.integer(dim(SB@Matrices)[2]), Matrices=SB@Matrices, SplineBasis=SB,
 			orderextrapol = ifelse(expr@orderextrapol > 0, expr@orderextrapol-1L, 0L), log=FALSE)
 	
-	linexinf <- ((diag(0:expr@degree))%*%expr@linexinf)[-1,]
-	linexsup <- ((diag(0:expr@degree))%*%expr@linexsup)[-1,]
+	linexinf <- ((diag(0:expr@degree))%*%expr@linexinf)[-1, , drop=FALSE]
+	linexsup <- ((diag(0:expr@degree))%*%expr@linexsup)[-1, , drop=FALSE]
 	no@linexinf <- linexinf
 	no@linexsup <- linexsup
 	no

@@ -80,27 +80,32 @@ A \code{data.frame} with 3 columns with the rate at the ending time, the cumulat
 }
 
 \examples{
-require(date)
-# data from package relsurv
-data(rdata, package="relsurv")
+\donttest{
 
-# rate table from package relsurv
-data(slopop, package="relsurv")
+if (requireNamespace("relsurv", quietly = TRUE) & requireNamespace("date", quietly = TRUE)) {
 
-tmpsurv <- Surv(rep(0, length(rdata$time)), rdata$time, rdata$cens)
-
-HH <- getPseudoHazardFromTable(tmpsurv, startdate=rdata$year,
-               startage=rdata$age*365.25 , matchdata=rdata, ratetable=slopop,
-               age="age", year="year",
-               rmap=list(sex=sex),
-               agemin=18,
-               ratename = "poprate", 
-               cumrateendname ="cumrateend", 
-               cumrateentername ="cumrateenter", 
-               idname="Id_byperiod"
-               ) 
-summary(HH)
-						
+	library(date)
+	# data from package relsurv
+	data(rdata, package="relsurv")
+	
+	# rate table from package relsurv
+	data(slopop, package="relsurv")
+	
+	tmpsurv <- Surv(rep(0, length(rdata$time)), rdata$time, rdata$cens)
+	
+	HH <- getPseudoHazardFromTable(tmpsurv, startdate=rdata$year,
+	               startage=rdata$age*365.25 , matchdata=rdata, ratetable=slopop,
+	               age="age", year="year",
+	               rmap=list(sex=sex),
+	               agemin=18,
+	               ratename = "poprate", 
+	               cumrateendname ="cumrateend", 
+	               cumrateentername ="cumrateenter", 
+	               idname="Id_byperiod"
+	               ) 
+	summary(HH)
+}	
+}					
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -16,3 +16,5 @@ setGeneric("initcoefC",function(object, ncol, ...)standardGeneric("initcoefC"))
 setGeneric("predictwce",function(object, t, Increment, fromT, ...)standardGeneric("predictwce"))
 setGeneric("predictcumwce",function(object, t, Increment, fromT, ...)standardGeneric("predictcumwce"))
 setGeneric("gradientwce",function(object, t, Increment, fromT, ...)standardGeneric("gradientwce"))
+
+setGeneric("predictCLT",function(object,...)standardGeneric("predictCLT"))

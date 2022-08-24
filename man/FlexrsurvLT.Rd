@@ -405,140 +405,144 @@ A REMPLIR
 
 \examples{
 \donttest{
-require(date)
-# data from package relsurv
-data(rdata, package="relsurv")
 
-class(rdata$year)<-"integer"
+if (requireNamespace("relsurv", quietly = TRUE) & requireNamespace("date", quietly = TRUE)) {
 
-
-# rate table from package relsurv
-data(slopop, package="relsurv")
-
-# get the death rate at event (or end of followup) from slopop for rdata
-rdata$iage <- findInterval(rdata$age*365.24+rdata$time, attr(slopop, "cutpoints")[[1]])
-rdata$iyear <- findInterval(rdata$year+rdata$time, attr(slopop, "cutpoints")[[2]])
-therate <- rep(-1, dim(rdata)[1])
-for( i in 1:dim(rdata)[1]){
-  therate[i] <- slopop[rdata$iage[i], rdata$iyear[i], rdata$sex[i]]
+	library(date)
+	# data from package relsurv
+	data(rdata, package="relsurv")
+	
+	class(rdata$year)<-"integer"
+	
+	
+	# rate table from package relsurv
+	data(slopop, package="relsurv")
+	
+	# get the death rate at event (or end of followup) from slopop for rdata
+	rdata$iage <- findInterval(rdata$age*365.24+rdata$time, attr(slopop, "cutpoints")[[1]])
+	rdata$iyear <- findInterval(rdata$year+rdata$time, attr(slopop, "cutpoints")[[2]])
+	therate <- rep(-1, dim(rdata)[1])
+	for( i in 1:dim(rdata)[1]){
+	  therate[i] <- slopop[rdata$iage[i], rdata$iyear[i], rdata$sex[i]]
+	}
+	
+	rdata$slorate <- therate
+	
+	# get the logit_start and logit_end
+	# logit start at age 18
+	
+	
+	tmpsurv <- Surv(rep(0, length(rdata$time)), rdata$time, rdata$cens)
+	
+	
+	HH <- getHazardFromTable(tmpsurv, startdate=rdata$year,
+	       startage=rdata$age*365.25 , matchdata=rdata, ratetable=slopop,
+	       age="age", year="year",
+	       rmap=list(sex=sex),
+	       agemin=18,
+	       ratename = "poprate", cumrateendname ="cumrateend", cumrateentername ="cumrateenter"
+	      ) 
+	
+	rdata$slorate <- HH$poprate
+	rdata$logit_start <- log(exp(HH$cumrateenter)-1)
+	rdata$logit_end <- log(exp(HH$cumrateend)-1)
+	
+	rdata$Id <- 1:dim(rdata)[1]
+	
+	
+	
+	
+	# change sex coding
+	rdata$sex01 <- rdata$sex -1
+	
+	# fit a relative survival model with a non linear effect of age 
+	#   without correction of life table
+	#   partial likelihood
+	fit00 <- flexrsurvclt(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
+	                                           Boundary.knots = c(24, 95)), 
+	                      rate=slorate, 
+			      data=rdata,
+			      knots.Bh=1850,  # one interior knot at 5 years
+	                 degree.Bh=3,
+	                 Max_T=5400,
+	                 Spline = "b-spline",
+	                 initbyglm=TRUE,
+	                 initbands=seq(0, 5400, 100), 
+	                 int_meth= "BANDS",
+	                 bands=seq(0, 5400, 50)
+	                 )
+	summary(fit00)
+	
+	# fit a relative survival model with a non linear effect of age 
+	#   without correction of life table
+	#   full likelihood
+	fit0 <- flexrsurvclt(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
+	                                           Boundary.knots = c(24, 95)), 
+	                                           rate=slorate, 
+					           logit_start=logit_start,
+	                    logit_end=logit_end,
+				data=rdata,
+				Id=Id,
+	                 knots.Bh=1850,  # one interior knot at 5 years
+	                 degree.Bh=3,
+	                 Max_T=5400,
+	                 Spline = "b-spline",
+	                 initbyglm=TRUE,
+	                 initbands=seq(0, 5400, 100), 
+	                 int_meth= "BANDS",
+	                 bands=seq(0, 5400, 50)
+	                 )
+	summary(fit0)
+	
+	# fit a relative survival model with a non linear effect of age
+	#   with correction of life table
+	#   full likelihood
+	fit1 <- flexrsurvclt(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
+	                                           Boundary.knots = c(24, 95)), 
+	                 rate=slorate, 
+					                     logit_start=logit_start,
+	                    logit_end=logit_end,
+				data=rdata,
+				Id=Id,
+	                 knots.Bh=1850,  # one interior knot at 5 years
+	                 degree.Bh=3,
+	                 Max_T=5400,
+	                 Spline = "b-spline",
+	             Spline.CLT=flexrsurv:::R2bBSplineBasis(knots=c(-2.5,0,2.5), degree=3),
+	                 initbyglm=TRUE,
+	                 initbands=seq(0, 5400, 100), 
+	                 int_meth= "BANDS",
+	                 bands=seq(0, 5400, 50)
+	                 )
+	summary(fit1)
+	
+	print(coef(fit1))
+	
+	# fit a relative survival model with a non linear effect of age
+	#   with correction of life table, strabified by sex
+	#   full likelihood
+	fit2 <- flexrsurvclt(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
+	                                           Boundary.knots = c(24, 95)), 
+		    formula.table= ~sex,
+	                 rate=slorate, 
+					                     logit_start=logit_start,
+	                    logit_end=logit_end,
+				data=rdata,
+				Id=Id,
+	                 knots.Bh=1850,  # one interior knot at 5 years
+	                 degree.Bh=3,
+	                 Max_T=5400,
+	                 Spline = "b-spline",
+	             Spline.CLT=flexrsurv:::R2bBSplineBasis(knots=c(-2.5,0,2.5), degree=3),
+	                 initbyglm=TRUE,
+	                 initbands=seq(0, 5400, 100), 
+	                 int_meth= "BANDS",
+	                 bands=seq(0, 5400, 50)
+	                 )
+	summary(fit2)
+	
+	AIC(fit0, fit1, fit2)
 }
-
-rdata$slorate <- therate
-
-# get the logit_start and logit_end
-# logit start at age 18
-
-
-tmpsurv <- Surv(rep(0, length(rdata$time)), rdata$time, rdata$cens)
-
-
-HH <- getHazardFromTable(tmpsurv, startdate=rdata$year,
-       startage=rdata$age*365.25 , matchdata=rdata, ratetable=slopop,
-       age="age", year="year",
-       rmap=list(sex=sex),
-       agemin=18,
-       ratename = "poprate", cumrateendname ="cumrateend", cumrateentername ="cumrateenter"
-      ) 
-
-rdata$slorate <- HH$poprate
-rdata$logit_start <- log(exp(HH$cumrateenter)-1)
-rdata$logit_end <- log(exp(HH$cumrateend)-1)
-
-rdata$Id <- 1:dim(rdata)[1]
-
-
-
-
-# change sex coding
-rdata$sex01 <- rdata$sex -1
-
-# fit a relative survival model with a non linear effect of age 
-#   without correction of life table
-#   partial likelihood
-fit00 <- flexrsurvclt(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
-                                           Boundary.knots = c(24, 95)), 
-                      rate=slorate, 
-		      data=rdata,
-		      knots.Bh=1850,  # one interior knot at 5 years
-                 degree.Bh=3,
-                 Max_T=5400,
-                 Spline = "b-spline",
-                 initbyglm=TRUE,
-                 initbands=seq(0, 5400, 100), 
-                 int_meth= "BANDS",
-                 bands=seq(0, 5400, 50)
-                 )
-summary(fit00)
-
-# fit a relative survival model with a non linear effect of age 
-#   without correction of life table
-#   full likelihood
-fit0 <- flexrsurvclt(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
-                                           Boundary.knots = c(24, 95)), 
-                                           rate=slorate, 
-				           logit_start=logit_start,
-                    logit_end=logit_end,
-			data=rdata,
-			Id=Id,
-                 knots.Bh=1850,  # one interior knot at 5 years
-                 degree.Bh=3,
-                 Max_T=5400,
-                 Spline = "b-spline",
-                 initbyglm=TRUE,
-                 initbands=seq(0, 5400, 100), 
-                 int_meth= "BANDS",
-                 bands=seq(0, 5400, 50)
-                 )
-summary(fit0)
-
-# fit a relative survival model with a non linear effect of age
-#   with correction of life table
-#   full likelihood
-fit1 <- flexrsurvclt(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
-                                           Boundary.knots = c(24, 95)), 
-                 rate=slorate, 
-				                     logit_start=logit_start,
-                    logit_end=logit_end,
-			data=rdata,
-			Id=Id,
-                 knots.Bh=1850,  # one interior knot at 5 years
-                 degree.Bh=3,
-                 Max_T=5400,
-                 Spline = "b-spline",
-             Spline.CLT=flexrsurv:::R2bBSplineBasis(knots=c(-2.5,0,2.5), degree=3),
-                 initbyglm=TRUE,
-                 initbands=seq(0, 5400, 100), 
-                 int_meth= "BANDS",
-                 bands=seq(0, 5400, 50)
-                 )
-summary(fit1)
-
-print(coef(fit1))
-
-# fit a relative survival model with a non linear effect of age
-#   with correction of life table, strabified by sex
-#   full likelihood
-fit2 <- flexrsurvclt(Surv(time,cens)~sex01+NLL(age, Knots=60, Degree=3,
-                                           Boundary.knots = c(24, 95)), 
-	    formula.table= ~sex,
-                 rate=slorate, 
-				                     logit_start=logit_start,
-                    logit_end=logit_end,
-			data=rdata,
-			Id=Id,
-                 knots.Bh=1850,  # one interior knot at 5 years
-                 degree.Bh=3,
-                 Max_T=5400,
-                 Spline = "b-spline",
-             Spline.CLT=flexrsurv:::R2bBSplineBasis(knots=c(-2.5,0,2.5), degree=3),
-                 initbyglm=TRUE,
-                 initbands=seq(0, 5400, 100), 
-                 int_meth= "BANDS",
-                 bands=seq(0, 5400, 50)
-                 )
-summary(fit2)
-
-AIC(fit0, fit1, fit2)
 }
 }
 

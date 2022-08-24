@@ -1,5 +1,5 @@
 \name{flexrsurv-package}
-\Rdversion{1.3.7}
+\Rdversion{2.0.11}
 \alias{flexrsurv-package}
 \alias{flexrsurvpackage}
 \alias{Flexrsurv-package}
@@ -19,8 +19,8 @@ Mahboubi et al. (2011) \doi{10.1002/sim.4208}.
 \tabular{ll}{
 Package: \tab flexrsurv\cr
 Type: \tab Package\cr
-Version: \tab 1.3.7\cr
-Date: \tab 2017-01-12\cr
+Version: \tab 2.0.11\cr
+Date: \tab 2022-08-23\cr
 License: \tab GPL(>)2.0)\cr
 }
 
@@ -28,7 +28,7 @@ The main function is \code{flexrsurv()}
 
 }
 \author{
-Michel Grzebyk and Isabelle Clerc-UrmÃ¨s, with contributions from the CENSUR working survival group. \cr
+Michel Grzebyk and Isabelle Clerc-Urmèss, with contributions from the CENSUR working survival group. \cr
 
 Maintainer: <michel.grzebyk@inrs.fr>
 }
