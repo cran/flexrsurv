@@ -2468,12 +2468,12 @@ predict.TPSplineBasis <- function(object=object, x=x, beta=NULL, intercept=TRUE,
 }
 
 
-setMethod("predictSpline",signature(object="BSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.BSplineBasis(object=object, x=x,  ...))
-setMethod("predictSpline",signature(object="EBSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.EBSplineBasis(object=object, x=x,  ...))
-setMethod("predictSpline",signature(object="LEBSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.LEBSplineBasis(object=object, x=x,  ...))
-setMethod("predictSpline",signature(object="R2BSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.LEBSplineBasis(object=object, x=x,  ...))
-setMethod("predictSpline",signature(object="R2bBSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.LEBSplineBasis(object=object, x=x,  ...))
-setMethod("predictSpline",signature(object="TPSplineBasis",x="numeric", beta="missing"),function(object, x, ...)predict.TPSplineBasis(object=object, x=x,  ...))
+setMethod("predictSpline",signature(object="BSplineBasis",x="numeric"),function(object, x, ...)predict.BSplineBasis(object=object, x=x,  ...))
+setMethod("predictSpline",signature(object="EBSplineBasis",x="numeric"),function(object, x, ...)predict.EBSplineBasis(object=object, x=x,  ...))
+setMethod("predictSpline",signature(object="LEBSplineBasis",x="numeric"),function(object, x, ...)predict.LEBSplineBasis(object=object, x=x,  ...))
+setMethod("predictSpline",signature(object="R2BSplineBasis",x="numeric"),function(object, x, ...)predict.LEBSplineBasis(object=object, x=x,  ...))
+setMethod("predictSpline",signature(object="R2bBSplineBasis",x="numeric"),function(object, x, ...)predict.LEBSplineBasis(object=object, x=x,  ...))
+setMethod("predictSpline",signature(object="TPSplineBasis",x="numeric"),function(object, x, ...)predict.TPSplineBasis(object=object, x=x,  ...))
 
 #setMethod("predict",signature("BSplineBasis","numeric","numeric"),function(object, x, beta, ...)PredictBBasisBeta(object=object, x=x, beta=beta, ...))
 #setMethod("predict",signature("TPSplineBasis","numeric","numeric"),function(object, x, beta, ...)PredictTPBasisBeta(object=object, x=x, beta=beta, ...))

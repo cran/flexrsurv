@@ -6,7 +6,9 @@ setGeneric("fevaluate",function(object, x,...)standardGeneric("fevaluate"))
 
 setGeneric("evaluatelc",function(object, x, beta,...)standardGeneric("evaluatelc"))
 
-setGeneric("predictSpline",function(object, x, beta,...)standardGeneric("predictSpline"))
+predictSpline <- function(object, x, ...) UseMethod("predictSpline")
+
+setGeneric("predictSpline")
 setGeneric("slowpredictSpline",function(object, x, beta,...)standardGeneric("slowpredictSpline"))
 
 setGeneric("integrate",function(object, x,...)standardGeneric("integrate"))

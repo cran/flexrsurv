@@ -351,6 +351,8 @@ flexrsurvclt.ll <- function(formula=formula(data),
 		}
 	} else {
 		Spline_t0 <- NULL
+		Spline_t <- NULL
+		
 	}
 	
 # lists of variables in the model/formula

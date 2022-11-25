@@ -1,14 +1,18 @@
-# method to evaluate a spline function
+# in AllGeneric.R
+# predictSpline <- function(object, x, ...) UseMethod("predictSpline")
 
 setMethod("predictSpline",
-		signature(object="character",x="numeric", beta="numeric"),
-		function(object, x, beta, ...)predictSpline.type(type=object, x=x,  coef = beta, ...))
+		signature(object="character",x="numeric"),
+		function(object, x, ...)predictSpline.default(object=object, x=x, ...))
 
-predictSpline.type <- function(type, x, knots, degree, keep.duplicates = FALSE, coef = 1){
+
+predictSpline.default <- function(object=c("b-spline", "tp-spline"), x, beta = 1, knots, degree, keep.duplicates = FALSE, ...){
+
+	object <-match.arg(object)
 	
 	knots <- sort(knots)
 	
-	Spline <-switch(type,
+	Spline <-switch(object,
 			"b-spline" =  BSplineBasis(knots=knots, 
 					degree=degree, 
 					keep.duplicates=keep.duplicates, 
@@ -22,7 +26,7 @@ predictSpline.type <- function(type, x, knots, degree, keep.duplicates = FALSE, 
 		
 
 	
-	pred <- predictSpline(Spline*coef, x )
+	pred <- predictSpline(Spline*beta, x )
 	
 	return(pred)
 	

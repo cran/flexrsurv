@@ -237,7 +237,6 @@ return(res);
 SEXP intTDftbase_NC(SEXP f1, SEXP f2, SEXP from, SEXP to, SEXP step, SEXP nstep, SEXP nstepmax, SEXP nctype,SEXP nbase,  SEXP rho)
 {
 
-//	Rprintf("in intTDftbase_NC");
 	int i, j, k;
 double *rfrom, *rto, *rstep, *xwork, *wwork, *fwork, *bwork, *tmprres, *rres, thestep;
 int *rnstep, rnctype, rnbase, nres, rnstepmax;
@@ -283,12 +282,10 @@ rnbase = asInteger(nbase);
     xwork = (double *) R_alloc((size_t) rnstepmax, sizeof(double));
     wwork = (double *) R_alloc((size_t) rnstepmax, sizeof(double));
     fwork = (double *) R_alloc((size_t) rnstepmax, sizeof(double));
-    /* Rprintf("ici %d %d\n", nres, rnbase); */
 	for( i=0; i<nres;  i++){
 /* sets points to evaluate */
 		if(rnstep[i] % rnctype) error("inconsistency in the number of subdivisions in the Newton-Cotes formula");
 		thestep = rstep[i];
-		/* 		Rprintf("ici %d %d %f %f %d %f \n", i, nres, rfrom[i], rto[i], rnstep[i], thestep ); */
 
 		xwork[0] = rfrom[i];
 		for( j = 1; j<rnstep[i]; j++){
@@ -296,52 +293,28 @@ rnbase = asInteger(nbase);
 			xwork[j] = rfrom[i] + j * thestep;
 		}
 		xwork[rnstep[i]] = rto[i];
-		/* 		Rprintf("ici xwork\n"); */
 /* compute f1(xwork, i) with fveval3 with mlang3 */
 		fwork = fveval3(f1, xwork, i+1, rnstep[i]+1, rho);
-		/* 		Rprintf("ici fwork\n"); */
 /* compute base_matrix_spline(x)  with fveval2 with lang2*/
 /* bwork is (rnstep[i]+1)%*%nabse matrix */ 
 		bwork = fveval2(f2, xwork, rnstep[i]+1, rho);
 
-		/* 		Rprintf("ici bwork \n"); */
 /* compute weights in wwork*/
 		ncweights(rnstep[i], rstep[i], rnctype, wwork);
-		/* 		Rprintf("ici ncweight\n"); */
-/* 		Rprintf("length %d %d %d %d \n", LENGTH(xwork), LENGTH(fwork), LENGTH(bwork), LENGTH(wwork) ); */
 /* computes and assigne the res */
 		for( k=0; k<rnbase;  k++){
-/*			Rprintf("+++ ici %d %d \n", k , rnbase ); */
 /* point to the colomn of th kth base */
 			tmprres = rres + i + k*nres;
-/*			tmpbwork = bwork + k*(rnstep[i]+1); */
 			*tmprres = 0.0;
 			for( j = 0; j<rnstep[i]+1; j++){
-/*				*tmprres += fwork[j] * wwork[j] * tmpbwork[j];*/
-/*				rres[i + k*nres] += fwork[j] * wwork[j] * tmpbwork[j]; */
 				rres[i + k*nres] += fwork[j] * wwork[j] * bwork[j+k*(rnstep[i]+1)];
 			}
-/*			*tmprres *= rstep[i];  */
-/*			Rprintf("ici sortie j, rstep %f %f %f %f %f \n", rstep[i], rfrom[i], rto[i], *tmprres, rres[i + k*nres]  );*/
-/*			rres[i + k*nres] *= rstep[i]; */
 		}
 	}
-
-/*	Rprintf("les 5 premières lignes de res\n");*/
-/*
-	for( j=0; j<5;  j++){
-		for( k=0; k<(rnbase);  k++){
-			Rprintf("%f ", rres[j + k*nres]);
-		}
-		Rprintf("\n");
-	}
-*/
-
 
     vmaxset(vmax);
     UNPROTECT(5);
 /*  returned value */
-/*	Rprintf("  +++++  out intTDftbase_NC \n");*/
 return(res);
 }
 

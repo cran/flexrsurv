@@ -114,6 +114,15 @@
 \alias{predictwce, BDSplineBasis,numeric,numeric,numeric-method}
 
 
+\alias{predictSpline,BDSplineBasis,numeric-method}
+\alias{predictSpline,BSplineBasis,numeric-method}
+\alias{predictSpline,EBSplineBasis,numeric-method}
+\alias{predictSpline,LEBSplineBasis,numeric-method}
+\alias{predictSpline,R2BSplineBasis,numeric-method}
+\alias{predictSpline,R2bBSplineBasis,numeric-method}
+\alias{predictSpline,TPSplineBasis,numeric-method}
+
+
 \title{
 Internal Objects and functions for the \pkg{flexrsurv } package
 }

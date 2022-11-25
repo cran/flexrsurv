@@ -15,7 +15,8 @@ export("flexrsurv",
        "getHazardFromTable",
        "getPseudoHazardFromTable",
        "getBrassPseudoHazardFromTable",
-		predictCLT       
+       "predictCLT", 
+       "predictSpline"       
               )
 S3method(print, flexrsurv)
 S3method(summary, flexrsurv)

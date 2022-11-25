@@ -1074,6 +1074,8 @@ flexrsurv.ll.fromto.brass0.period.wce.fitCoptim<-function (Y, X0, X, Z, W,
 						gr = gr_function,
 #                    gr = NULL,
 						method=method$optim_meth,
+						lower=method$lower,
+						upper=method$upper,
 						constraints=NULL,
 # ll_flexrsurv_fromto_GA0B0ABE0Br0 args
 						Y=Y, X0=X0, X=X, Z=Z, W=W,
