@@ -36,13 +36,13 @@ getHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 	iagert <- match(age, dimid)
 	iyearrt <- match(year, dimid)
 	
-	if (!inherits(startdate, "Date")) {
-		startdate <- as.Date(startdate, origin = origin, format=format)
-	}
-	
+#	if (!inherits(startdate, "Date")) {
+#		startdate <- as.Date(startdate, origin = origin, format=format)
+#	}
+#	startdate <- ratetableDate(startdate)
 	
 	minage <- rep(agemin * scale, length(startage) )
-	mindate <- as.Date(startdate - (startage - minage), origin = origin, format=format)
+	mindate <- startdate - (startage - minage)
 	
 	#extract variables from matchdata in ratetable according to rmap
 	if (missing(rmap) ) {
@@ -185,6 +185,8 @@ getHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 	if(!is.null(matchdata)){
 		names(matchdata2) <- orderednamesinrt
 	}
+	
+	dateend <- ratetableDate(dateend)
 	for( i in 1:n) {
 		if(verbose){
 			cat(paste(backwd, format(i, width=lengthmessage, trim=FALSE), sep=""))
@@ -207,7 +209,7 @@ getHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 		ratematrix <- extract.ratetable(ratetable, which=md, age=age, year=year)
 		cutdate <- c(attr(ratetable, "cutpoints")[[iyearrt]], +Inf)
 		cutage  <- c(attr(ratetable, "cutpoints")[[iagert]], +Inf)
-		cutdate <- c(attr(ratetable, "cutpoints")[[iyearrt]])
+		cutdate <- ratetableDate(attr(ratetable, "cutpoints")[[iyearrt]])
 		cutage  <- c(attr(ratetable, "cutpoints")[[iagert]])
 		cutpoints <- list(cutage=cutage, cutdate=cutdate)
 		# get cell index of endage, enddate

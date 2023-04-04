@@ -1,5 +1,18 @@
 NEWS about R package flexrsurv
 
+Version 2.0.16 - 2023-01-02
+      o new method extractAIC.flexrsurv
+      o bug correction in getPsuedoHazardFromTable and  getBrassPseudoHazardFromTable
+      o corrections needed for R 4.3
+
+Version 2.0.15 - 2023-01-02
+      o code review and optimization for spline basis used in life table correction model
+      o new spline basis for life table correction model : linear-tailed B-spline basis
+
+Version 2.0.14 - 2022-11-26
+      o exact constraint for restricted spline with degree less than 3
+      o use of nloptr in case of table correction model  
+      
 Version 2.0.13 - 2022-11-21
       o flexrsurvclt now use the parameter lower and upper in case of no table correction model
 

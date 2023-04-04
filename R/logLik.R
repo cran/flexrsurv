@@ -20,3 +20,11 @@ vcov.flexrsurv <- function (object, ...) {
 	dimnames(vmat) <- list(vname, vname)
 	vmat
 }
+
+extractAIC.flexrsurv <- function (fit, scale = 0, k = 2, ...) 
+{
+	loglik <- logLik(fit)
+	edf <-  attr(loglik, "nobs") - attr(loglik, "df")
+	aic <- stats::AIC(fit)
+	c(edf, aic + (k - 2) * edf)
+}

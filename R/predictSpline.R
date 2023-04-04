@@ -3,11 +3,12 @@
 
 setMethod("predictSpline",
 		signature(object="character",x="numeric"),
-		function(object, x, ...)predictSpline.default(object=object, x=x, ...))
+		function(object, x, ...)predictSpline.default(type=object, x=x, ...))
 
 
-predictSpline.default <- function(object=c("b-spline", "tp-spline"), x, beta = 1, knots, degree, keep.duplicates = FALSE, ...){
+predictSpline.default <- function(object=c("b-spline", "tp-spline"), x, knots, degree, keep.duplicates = FALSE, coef = 1, ...){
 
+	call <- match.call()
 	object <-match.arg(object)
 	
 	knots <- sort(knots)
@@ -26,7 +27,7 @@ predictSpline.default <- function(object=c("b-spline", "tp-spline"), x, beta = 1
 		
 
 	
-	pred <- predictSpline(Spline*beta, x )
+	pred <- predictSpline(Spline*coef, x )
 	
 	return(pred)
 	

@@ -22,7 +22,7 @@ PredictWCEMBasis<-function(object, t, Increment, fromT, tId, FirstId, LastId, in
 	M<-object@Matrices
 	knots<-object@knots
 	order<-object@degree+1
-	wce <- .Call("predict_wce_spline_basis", as.double(knots), as.integer(order), M,
+	wce <- .Call(C_predict_wce_spline_basis, as.double(knots), as.integer(order), M,
 			as.integer(intercept),
 			as.double(Increment), as.double(fromT), as.integer(FirstId), as.integer(LastId), 
 			as.double(t),  as.integer(tId),  as.integer(outer.ok))
@@ -43,7 +43,7 @@ PredictWCEEMBasis<-function(object, t, Increment, fromT, tId, FirstId, LastId, i
 	M<-object@Matrices
 	knots<-object@knots
 	order<-object@degree+1
-	wce <- .Call("predict_wce_espline_basis", as.double(knots), as.integer(order), M,
+	wce <- .Call(C_predict_wce_espline_basis, as.double(knots), as.integer(order), M,
 			as.integer(intercept),
 			as.double(Increment), as.double(fromT), as.integer(FirstId), as.integer(LastId), 
 			as.double(t),  as.integer(tId), PACKAGE="flexrsurv")
@@ -74,7 +74,7 @@ PredictWCETPBasis<-function(object, t, Increment, fromT, tId, FirstId, LastId, i
 		stop("Weighted Cumulative Exposure effects are not defined for increasing truncated power splines")
 	}
 	else {
-		wce <- .Call("predict_wce_trunc_power_basis", as.double(knots), as.double(replicates),
+		wce <- .Call(C_predict_wce_trunc_power_basis, as.double(knots), as.double(replicates),
 				as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
 				as.double(Increment), as.double(fromT), as.integer(FirstId), as.integer(LastId), 
 				as.double(t),  as.integer(tId), as.integer(outer.ok), PACKAGE="flexrsurv")
@@ -162,7 +162,7 @@ GradientWCEMBasis<-function(object, t, Increment, fromT, tId, FirstId, LastId, i
 	knots<-object@knots
 	order<-object@degree+1
 	
-	grdwce <- .Call("grad_wce_spline_basis", as.double(knots), as.integer(order), M,
+	grdwce <- .Call(C_grad_wce_spline_basis, as.double(knots), as.integer(order), M,
 			as.integer(intercept),
 			as.double(Increment), as.double(fromT), as.integer(FirstId), as.integer(LastId), 
 			as.double(t),  as.integer(tId),  as.integer(outer.ok))
@@ -184,7 +184,7 @@ GradientWCEEMBasis<-function(object, t, Increment, fromT, tId, FirstId, LastId, 
 	knots<-object@knots
 	order<-object@degree+1
 	
-	grdwce <- .Call("grad_wce_espline_basis", as.double(knots), as.integer(order), M,
+	grdwce <- .Call(C_grad_wce_espline_basis, as.double(knots), as.integer(order), M,
 			as.integer(intercept),
 			as.double(Increment), as.double(fromT), as.integer(FirstId), as.integer(LastId), 
 			as.double(t),  as.integer(tId), PACKAGE="flexrsurv")
@@ -217,7 +217,7 @@ GradientWCETPBasis<-function(object, t, Increment, fromT, tId, FirstId, LastId, 
 		stop("Weighted Cumulative Exposure effects are not defined for increasing truncated power splines")
 	}
 	else {
-		grdwce <- .Call("grad_wce_trunc_power_basis", as.double(knots), as.double(replicates),
+		grdwce <- .Call(C_grad_wce_trunc_power_basis, as.double(knots), as.double(replicates),
 				as.double(min), as.double(max), as.integer(order), as.double(coef), as.double(degrees), as.integer(intercept),
 				as.double(Increment), as.double(fromT), as.integer(FirstId), as.integer(LastId), 
 				as.double(t),  as.integer(tId), as.integer(outer.ok), PACKAGE="flexrsurv")

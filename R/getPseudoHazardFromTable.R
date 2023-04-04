@@ -54,13 +54,16 @@ getPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 	iagert <- match(age, dimid)
 	iyearrt <- match(year, dimid)
 	
-	if (!inherits(startdate, "Date")) {
-		startdate <- as.Date(startdate, origin = origin, format=format)
-	}
+#	if (!inherits(startdate, "Date")) {
+#		startdate <- as.Date(startdate, origin = origin, format=format)
+#	}
 	
+	class.startdate <- class(startdate)
+	# from now on, all dates are with class Date
+	startdate <- as.Date(as.numeric(ratetableDate(startdate)))
 	
 	minage <- rep(agemin * scale, length(startage) )
-	mindate <- as.Date(startdate - (startage - minage), origin = origin, format=format)
+	mindate <- startdate - (startage - minage)
 	
 	#extract variables from matchdata in ratetable according to rmap
 	if (!missing(rmap)) {
@@ -81,6 +84,7 @@ getPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 		namesindata <- as.character(as.list(rcall0)[-1])
 	}
 	else {
+		rmap <- NULL
 		rcall0 <- NULL
 		namesinrt <- NULL
 		namesindata <- NULL
@@ -123,12 +127,14 @@ getPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 	
 	matchdata2 <- matchdata[,orderednamesindata, drop=FALSE]
 	# here, the pseudo cumulative rate is computed at the period pointed bys the starting date in the split data
-	tmap2 <- paste(dimid[iagert], "= minage, ", dimid[iyearrt], " = tdatestart", sep="")
+	tmap2 <- paste(dimid[iagert], "= minage, ", dimid[iyearrt], " = mindate", sep="")
+	tmap3 <- paste(dimid[iagert], "= tagestop1, ", dimid[iyearrt], " = tdatestop1", sep="")
 	
 	if(!is.null(matchdata)){
 		if (!missing(rmap)) {
 			tmap <- deparse(rcall0)
 			rcall2 <- parse(text = paste( strsplit(tmap, ")"), ", ", tmap2, ")", sep=""))[[1]]
+			rcall3 <- parse(text = paste( strsplit(tmap, ")"), ", ", tmap3, ")", sep=""))[[1]]
 			if (!is.call(rcall2) || rcall2[[1]] != as.name("list")){
 				stop("Invalid rmap argument")
 			}
@@ -139,9 +145,11 @@ getPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 	}
 	else {
 		rcall2 <- parse(text = paste("list(", tmap2, ")"))[[1]]
+		rcall3 <- parse(text = paste("list(", tmap3, ")"))[[1]]
 	}
 	temp <- match(names(rcall2)[-1], dimid)
 	
+	# dates in tmpdata are of class Date,  
 	tmpdata <- data.frame(startage = startage,
 			startdate= startdate,
 			Tstartdate= startdate + Y[,1],
@@ -153,22 +161,49 @@ getPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 		tmpdata <- cbind(tmpdata, matchdata2) 
 	}
 	
-	# cutpoints in the ratetable
+	# cutpoints in the ratetable, with dates converted to class Date
 	
-	cutdate <- as.Date(c(attr(ratetable, "cutpoints")[[iyearrt]]), origin = origin, format=format)
+	cutdate <- ratetableDate(attr(ratetable, "cutpoints")[[iyearrt]])
 	cutage  <- c(attr(ratetable, "cutpoints")[[iagert]])
 	cutpoints <- list(cutage=cutage, cutdate=cutdate)
 	
 	# split data at the period/year cutpoints of the rate table
+  # survSplit need numerics in Surv() and cut
 	splitdata <- survSplit(Surv(as.numeric(Tstartdate), as.numeric(Tenddate), rep(0,dim(tmpdata)[1])) ~., data=tmpdata,
 			cut=as.numeric(cutdate), id= idname, start="tdatestart", end="tdatestop", event="event")
 	
-	splitdata$tdatestart2 <- as.Date(splitdata$tdatestart, origin = origin, format=format)
-	splitdata$tdatestop2 <- as.Date(splitdata$tdatestop, origin = origin, format=format)
+	splitdata$tdatestart2 <- as.Date(splitdata$tdatestart)
+	splitdata$tdatestop2 <- as.Date(splitdata$tdatestop)
+
+	splitdata$dtdatestart <- as.Date(splitdata$tdatestart) - splitdata$mindate
+	splitdata$dtdatestop <- as.Date(splitdata$tdatestop) - splitdata$mindate
 	
-	splitdata$startdate <-  tmpdata$startdate[splitdata[[idname]]]
+	splitdata$tdatestop1 <- splitdata$mindate + splitdata$dtdatestop -1
+	splitdata$tagestop1 <- splitdata$minage + splitdata$dtdatestop -1
+	splitdata$oneday <- 1
 	
-	
+
+callsurvexpenter <- as.call(list(survexp, formula = dtdatestart  ~ 1 , data=splitdata, rmap=rcall2,
+				method="individual.h",
+				ratetable=ratetable))
+
+cumratestart <- eval(callsurvexpenter)
+
+callsurvexpend <- as.call(list(survexp, formula = dtdatestop  ~ 1 , data=splitdata, rmap=rcall2,
+				method="individual.h",
+				ratetable=ratetable))
+
+cumrateend <- eval(callsurvexpend)
+
+
+callsurvexprate <- as.call(list(survexp, formula = oneday  ~ 1 , data=splitdata, rmap=rcall3,
+				method="individual.h",
+				ratetable=ratetable))
+
+rateend <- eval(callsurvexprate)
+
+
+
 	splitdata$istartperiod <- findInterval(splitdata$tdatestart, cutdate, left.open = FALSE)
 	splitdata$iendperiod <- findInterval(splitdata$tdatestop, cutdate, left.open = TRUE)
 	
@@ -192,39 +227,9 @@ getPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 	
 # match data
 	md <- data.frame(eval(rcall, splitdata), stringsAsFactors = TRUE)
-	#  print("+4")
 	
-# inits
-	cumHend <- rep(0, dim(splitdata)[1])
-	cumHstart <- cumHend 
-	rate <- cumHend 
 	
-	class(ratetable) <- c(class(ratetable), "array")
-	
-	for(i in 1:dim(splitdata)[1]){
-		# extration of the vector of rates at periode istartperiod[i] for matched data md[i,]
-		theindice <- c(list("1"=iminage:splitdata$iendage[i]), 
-				as.list(c(splitdata$istartperiod[i], md[i,])))
-		thedims <- c(iagert, iyearrt, imapmdrt)
-		rateend   <- extract(ratetable, 
-				indices= as.list(theindice[ order(thedims)]),
-				dims=thedims[ order(thedims)], drop=TRUE)
-		ratestart <-rateend[1:length(iminage:splitdata$istartage[i])]
-		
-		beginstart <- cutage[iminage:splitdata$istartage[i]]
-		endstart <- c(beginstart[-1], splitdata$tstartage[i])
-		
-		beginend <- cutage[iminage:splitdata$iendage[i]]
-		endend <- c(beginend[-1], splitdata$tendage[i])
-		
-		cumHstart[i] <- ratestart %*% (endstart - beginstart)
-		cumHend[i]   <- rateend %*% (endend - beginend)
-		
-		rate[i]  <- rateend[length(rateend)]
-		
-	}
-	
-	ret <- data.frame(splitdata[[idname]], rate, cumHstart, cumHend, rep(iminage, length(cumHstart)), 
+	ret <- data.frame(splitdata[[idname]], rateend, cumratestart, cumrateend, rep(iminage, length(cumratestart)), 
 			splitdata$istartage, splitdata$iendage, splitdata$mindate, splitdata$minage, 
 			splitdata$tdatestart2, splitdata$tdatestop2, 
 			splitdata$tstartage, splitdata$tendage )

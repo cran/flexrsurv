@@ -921,112 +921,198 @@ flexrsurv.ll.fromto.brass0.wce.fitCoptim<-function (Y, X0, X, Z, W,
 	if(!is.null(Spline_B)){
 		# for brass model : deriv(Spline_B) > 0
 		# first basis is contraints to one
-		# constraits is betaclt %*% evaluate(deriv(Spline_B), PivotConstraintSplinceCLT.R2bBSplineBasis(Spline_B)[-1]) > 0
-		# constraints on brass parameters : brass0[1] unconstraints (la constante)
-		# brass0[-1] >= 0
-		# other parameters unconstraines
-		# dim(ui) = c( nbrass0-1,  nparam)
-		# ui[, 1: First.brass0-1] == 0
-		# ui[, First.brass0 -1+(1:nbrass0)] == evaluate(deriv(Spline_B), pivot)[-1, -1]
-		# ci = evaluate(deriv(Spline_B), pivot)[-1, 1]
-		# ui[, (First.brass0+nbrass0):nparam] = 0
 		
-		pivot <- PivotConstraintSplinceCLT.R2bBSplineBasis(Spline_B)
-		matder <- evaluate(deriv(Spline_B), pivot)
-		ui <- matder[-1, -1]
-		ci <- - matder[-1, 1]
-		if(First.brass0>1){
-			ui <- cbind(matrix(0, ncol = First.brass0-1, nrow=nbrass0), ui)
-		}
-		# add columns of 0 for other table corection parameters
-		if(!is.null(BX0)){
-			ui <- cbind(ui, matrix(0, ncol = nBX0 , nrow=nbrass0))
-		}
-		
-#		ui <- diag(nbrass0-1)
-#		ci = rep(0, nbrass0-1)
-#		if(First.brass0>1){
-#			ui <- cbind(matrix(0, ncol = First.brass0, nrow=nbrass0-1), ui)
-#		}
-#		if(!is.null(BX0)){
-#			ui <- cbind(ui, matrix(0, ncol = nBX0 , nrow=nbrass0-1))
-#		}
-		# unconstraint optimisation with optim
-#   fit<-optim(initGA0B0ABE0Br0,
-#              fn=ll_function,
-#              gr = gr_function,
-#              method=method$optim_meth,
-		# constraint optimisation with constrOptim
-#   fit<-constrOptim(initGA0B0ABE0Br0,
-#              f=ll_function,
-#              grad = gr_function,
-#                    ui=ui,
-#                    ci=rep(0, nbrass0-1),
-#              method="L-BFGS-B",
-		##              method="Nelder-Mead",
-#              constraints=NULL,
-#              lower=lowerGA0B0ABE0Br0,
-#              upper=upperGA0B0ABE0Br0,
-		
-		Con <- list(outer.iterations = 100, outer.eps = 1e-05)
+		Con <- list(outer.iterations = 100, outer.eps = 1e-05, link.barrier = "log", alpha.barrier = 1/2, beta.barrier = 1)
 		nCon <- names(Con)
 		Con[(nCoptim.control <- names(Coptim.control))] <- Coptim.control
 		Con <- Con[nCon]
 		
-		options(show.error.messages = FALSE)
-		fit<-try(constrOptim(initGA0B0ABE0Br0,
-						f=ll_function,
-						grad = gr_function,
-#                         grad = NULL,
-						ui=ui,
-						ci=ci,
-						method=method$constOptim_meth,
-						lower=method$lower,
-						upper=method$upper,
-						constraints=NULL,
-						outer.iterations = Con$outer.iterations, outer.eps = Con$outer.eps,
-						control = optim.control,
-						hessian = dohessian,
-						# ll_flexrsurv_fromto_GA0B0ABE0Br0 args
-						Y=Y, X0=X0, X=X, Z=Z, W=W,
-						BX0=BX0,
-						Id=Id, FirstId=FirstId, 
-						expected_rate=expected_rate,
-						expected_logit_enter=expected_logit_enter,
-						expected_logit_end=expected_logit_end,
-						weights = weights,
-						Ycontrol = Ycontrol, BX0control = BX0control, 
-						weightscontrol = weightscontrol,
-						Idcontrol = Idcontrol, FirstIdcontrol = FirstIdcontrol,
-						expected_ratecontrol = expected_ratecontrol,
-						expected_logit_endcontrol = expected_logit_endcontrol,
-						expected_logit_entercontrol = expected_logit_entercontrol,
-						step=step, Nstep=Nstep, 
-						intTD=intTD, intweightsfunc=intweightsfunc,
-						intTD_base=intTD_base,
-						intTD_WCEbase=intTD_WCEbase,
-						nT0basis=nT0basis,
-						Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
-						ialpha0=ialpha0, nX0=nX0,
-						ibeta0= ibeta0, nX=nX, 
-						ialpha=ialpha, 
-						ibeta= ibeta, 
-						nTbasis=nTbasis,
-						ieta0=ieta0, iWbeg=iWbeg, iWend=iWend, nW=nW, 
-						ibrass0=ibrass0, nbrass0=nbrass0,
-						ibalpha0=ibalpha0, nBX0=nBX0,
-						Spline_t = Spline_t,
-						Intercept_t_NPH=Intercept_t_NPH,
-						ISpline_W = ISpline_W,
-						Intercept_W=Intercept_W,
-						nBbasis=nBbasis,
-						Spline_B=Spline_B, Intercept_B=Intercept_B,
-						debug=debug.ll,
-						debug.gr=debug.gr),
-				silent=TRUE)
-		options(show.error.messages = TRUE)
 		
-		
+		if(getDegree(Spline_B) == 3){
+			# the constraints aer based on based on Chan, Tsui et al. 2021	
+			# non linear constraint barrier algorithm
+			# constraints are f_ui(param) - ci > 0
+			
+			ineq_constr <- function(param, Spline_B, ibrass0, ... ){
+				# second derivative at knots values
+				knots <- unique(getKnots(Spline_B))
+				nk <- length(knots)
+				d1atknots <- predictSpline(deriv(Spline_B * c(1.0, param[ibrass0])), knots)			
+				d2atknots <- predictSpline(deriv(deriv(Spline_B * c(1, param[ibrass0]))), knots)
+				
+				ineq <- ifelse( d2atknots[-1]> 0 &  d2atknots[-nk] < 0, 
+						d1atknots[-nk] - d2atknots[-nk]^2/(d2atknots[-1]-d2atknots[-nk])/2 , 
+						ifelse(d1atknots[-1] < d1atknots[-nk], d1atknots[-1] , d1atknots[-nk]))
+				
+				return(ineq)
+			}
+			
+			
+			grad_constr <- function(param, Spline_B, ibrass0, ... ){
+				# Spline_B is the unscaled basis
+				# second derivative at knots values
+				knots <- unique(getKnots(Spline_B))
+				nk <- length(knots)
+				d1atknots <- predictSpline(deriv(Spline_B * c(1.0, param[ibrass0])), knots)			
+				d2atknots <- predictSpline(deriv(deriv(Spline_B * c(1, param[ibrass0]))), knots)
+				
+				# remove the first column corresponding to the unit constraint for the first basis component
+				gd1atknots <- evaluate(deriv(Spline_B), knots)[, -1]			
+				gd2atknots <- evaluate(deriv(deriv(Spline_B)), knots)[, -1]
+				
+				whichcase <- ifelse( d2atknots[-1]> 0 &  d2atknots[-nk] < 0, 1, 
+						ifelse(d1atknots[-1] - d1atknots[-nk] > 0 , 2, 3 ))
+				
+				grad <- gd1atknots[-nk, ]
+				for( i in 1:(nk-1)){
+					if( whichcase[i] == 3){
+						grad[i, ] <- gd1atknots[i+1, ]
+					}
+					else if( whichcase[i] == 1){
+						grad[i, ] <- gd1atknots[i, ] - 1/2 * ( 2 * d2atknots[i] * (d2atknots[i+1] - d2atknots[i]) * gd2atknots[i, ]  - (d2atknots[i]^2)* (gd2atknots[i+1, ] - gd2atknots[i, ])) / (d2atknots[i+1] - d2atknots[i])
+					}
+				}
+				
+				gradparam <- matrix(0, ncol = nparam, nrow = dim(grad)[1])
+				gradparam[, ibrass0] <- grad
+				return(gradparam)
+			}
+			
+			
+			options(show.error.messages = FALSE)
+			fit<-try(nonLinconstrOptim(initGA0B0ABE0Br0,
+							f=ll_function,
+							grad = gr_function,
+							f_ui=ineq_constr,
+							ci=0,
+							grad_ui = grad_constr, 
+							method=method$constOptim_meth,
+							lower=method$lower,
+							upper=method$upper,
+							constraints=NULL,
+							outer.iterations = Con$outer.iterations, outer.eps = Con$outer.eps,
+							control = optim.control,
+							hessian = dohessian,
+							# ll_flexrsurv_fromto_GA0B0ABE0Br0 args
+							Y=Y, X0=X0, X=X, Z=Z, W=W,
+							BX0=BX0,
+							Id=Id, FirstId=FirstId, 
+							expected_rate=expected_rate,
+							expected_logit_enter=expected_logit_enter,
+							expected_logit_end=expected_logit_end,
+							weights = weights,
+							Ycontrol = Ycontrol, BX0control = BX0control, 
+							weightscontrol = weightscontrol,
+							Idcontrol = Idcontrol, FirstIdcontrol = FirstIdcontrol,
+							expected_ratecontrol = expected_ratecontrol,
+							expected_logit_endcontrol = expected_logit_endcontrol,
+							expected_logit_entercontrol = expected_logit_entercontrol,
+							step=step, Nstep=Nstep, 
+							intTD=intTD, intweightsfunc=intweightsfunc,
+							intTD_base=intTD_base,
+							intTD_WCEbase=intTD_WCEbase,
+							nT0basis=nT0basis,
+							Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+							ialpha0=ialpha0, nX0=nX0,
+							ibeta0= ibeta0, nX=nX, 
+							ialpha=ialpha, 
+							ibeta= ibeta, 
+							nTbasis=nTbasis,
+							ieta0=ieta0, iWbeg=iWbeg, iWend=iWend, nW=nW, 
+							ibrass0=ibrass0, nbrass0=nbrass0,
+							ibalpha0=ibalpha0, nBX0=nBX0,
+							Spline_t = Spline_t,
+							Intercept_t_NPH=Intercept_t_NPH,
+							ISpline_W = ISpline_W,
+							Intercept_W=Intercept_W,
+							nBbasis=nBbasis,
+							Spline_B=Spline_B, Intercept_B=Intercept_B,
+							debug=debug.ll,
+							debug.gr=debug.gr),
+					silent=FALSE)
+			options(show.error.messages = TRUE)
+			
+		} else {
+			# linear constraint barrier algorithm
+			# constraints based on values at speciied points (pivot points)
+			# constraits is betaclt %*% evaluate(deriv(Spline_B), PivotConstraintSplinceCLT.R2bBSplineBasis(Spline_B)[-1]) > 0
+			# constraints on brass parameters : brass0[1] unconstraints (la constante)
+			# brass0[-1] >= 0
+			# other parameters unconstraines
+			# dim(ui) = c( nbrass0-1,  nparam)
+			# ui[, 1: First.brass0-1] == 0
+			# ui[, First.brass0 -1+(1:nbrass0)] == evaluate(deriv(Spline_B), pivot)[-1, -1]
+			# ci = evaluate(deriv(Spline_B), pivot)[-1, 1]
+			# ui[, (First.brass0+nbrass0):nparam] = 0
+			
+			
+			
+			#	if(oldcontraint){
+			pivot <- PivotConstraintSplinceCLT.R2bBSplineBasis(Spline_B)
+			matder <- evaluate(deriv(Spline_B), pivot)
+			ui <- matder[-1, -1]
+			ci <- - matder[-1, 1]
+			if(First.brass0>1){
+				ui <- cbind(matrix(0, ncol = First.brass0-1, nrow=nbrass0), ui)
+			}
+			# add columns of 0 for other table corection parameters
+			if(!is.null(BX0)){
+				ui <- cbind(ui, matrix(0, ncol = nBX0 , nrow=nbrass0))
+			}
+			
+			
+			options(show.error.messages = FALSE)
+			fit<-try(constrOptim(initGA0B0ABE0Br0,
+							f=ll_function,
+							grad = gr_function,
+							ui=ui,
+							ci=ci,
+							method=method$constOptim_meth,
+							lower=method$lower,
+							upper=method$upper,
+							constraints=NULL,
+							outer.iterations = Con$outer.iterations, outer.eps = Con$outer.eps,
+							control = optim.control,
+							hessian = dohessian,
+							# ll_flexrsurv_fromto_GA0B0ABE0Br0 args
+							Y=Y, X0=X0, X=X, Z=Z, W=W,
+							BX0=BX0,
+							Id=Id, FirstId=FirstId, 
+							expected_rate=expected_rate,
+							expected_logit_enter=expected_logit_enter,
+							expected_logit_end=expected_logit_end,
+							weights = weights,
+							Ycontrol = Ycontrol, BX0control = BX0control, 
+							weightscontrol = weightscontrol,
+							Idcontrol = Idcontrol, FirstIdcontrol = FirstIdcontrol,
+							expected_ratecontrol = expected_ratecontrol,
+							expected_logit_endcontrol = expected_logit_endcontrol,
+							expected_logit_entercontrol = expected_logit_entercontrol,
+							step=step, Nstep=Nstep, 
+							intTD=intTD, intweightsfunc=intweightsfunc,
+							intTD_base=intTD_base,
+							intTD_WCEbase=intTD_WCEbase,
+							nT0basis=nT0basis,
+							Spline_t0=Spline_t0, Intercept_t0=Intercept_t0,
+							ialpha0=ialpha0, nX0=nX0,
+							ibeta0= ibeta0, nX=nX, 
+							ialpha=ialpha, 
+							ibeta= ibeta, 
+							nTbasis=nTbasis,
+							ieta0=ieta0, iWbeg=iWbeg, iWend=iWend, nW=nW, 
+							ibrass0=ibrass0, nbrass0=nbrass0,
+							ibalpha0=ibalpha0, nBX0=nBX0,
+							Spline_t = Spline_t,
+							Intercept_t_NPH=Intercept_t_NPH,
+							ISpline_W = ISpline_W,
+							Intercept_W=Intercept_W,
+							nBbasis=nBbasis,
+							Spline_B=Spline_B, Intercept_B=Intercept_B,
+							debug=debug.ll,
+							debug.gr=debug.gr),
+					silent=TRUE)
+			options(show.error.messages = TRUE)
+		}
 	}
 	else {
 		# no Brass correction, unconstrait optimisation 

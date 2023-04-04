@@ -29,7 +29,7 @@ predictCLT.flexrsurvclt <- function(object, newdata = NULL,
 
 	if(!is.null(newcoef)){
 		if(length(newcoef) != length(object$list_coefficients$brass0)){
-			stop("wrong lenght o newcoef")
+			stop("wrong lenght of newcoef")
 		}
 	} else {
 		newcoef <- object$list_coefficients$brass0

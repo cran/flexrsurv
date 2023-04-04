@@ -66,20 +66,9 @@ setClass("LEBSplineBasis",
 				linexsup="array"),
 		contains="BSplineBasis")
 
-# Restricted Msplinebasis : linear extrapolation + 2nd derivative at boundary == 0
-# same parameters/slot as BSplineBasis but methods are different
-# slot knots contains all the knots, including all the duplicated boundary knots
-# slots  linexinf and linexsup are 2x2 matrix such that linear extrapolation is
-#    linexinf %*% c(1, (x-kmin))
-#    linexsup %*% c(1, (x-kmax))
-# R2MSplinBasis are LEBSplineBasis with specific Matrices and number of basis
-setClass("R2BSplineBasis",
-		contains="LEBSplineBasis")
-
-# Restricted Msplinebasis : linear extrapolation + 2nd derivative at boundary == 0
+# Restricted Bsplinebasis : linear extrapolation + 2nd derivative at boundary == 0
 # with firstB'(kmin) = 0 and lastB'(Kmax) = 0
 #
-# it is a "R2BSplineBasis" with rotated basis
 # if order = 4, restricted cubic spline
 # the coef of extrapolated linear term is the first and the last coef
 # same parameters/slot as BSplineBasis but methods are different
@@ -90,6 +79,16 @@ setClass("R2BSplineBasis",
 # R2MSplinBasis are LEBSplineBasis with specific Matrices and number of basis
 setClass("R2bBSplineBasis",
 		contains="LEBSplineBasis")
+
+
+#####################################################################################################################################
+# Linear-tailed Bsplinebasis : linear extrapolation + derivative(of order > 1 at boundaries) == 0 and derivative continuity condition at boundary knots
+# if order = 4, restricted cubic spline
+# LTBSplinBasis are LEBSplineBasis with specific Matrices and number of basis
+setClass("LTBSplineBasis",
+		contains="LEBSplineBasis")
+
+
 
 # TP Spline Basis
 setClass("TPSplineBasis",
@@ -119,6 +118,16 @@ setClass("C0BSplineBasis", representation("BSplineBasis",
 				ref="numeric"))
 setClass("C0TPSplineBasis", representation("TPSplineBasis",
 				ref="numeric"))
+
+##########################################################################################################
+# Constrained Basis 
+setClass("CR2bBSplineBasis",
+		representation(constraints ="numeric",
+				free= "logical"),
+		contains="R2bBSplineBasis")
+
+
+
 
 setClassUnion("AnySplineBasis", c("BSplineBasis", "MSplineBasis", "LEBSplineBasis", "TPSplineBasis"))
 

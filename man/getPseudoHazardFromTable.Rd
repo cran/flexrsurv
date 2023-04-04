@@ -91,10 +91,10 @@ if (requireNamespace("relsurv", quietly = TRUE) & requireNamespace("date", quiet
 	tmpsurv <- Surv(rep(0, length(rdata$time)), rdata$time, rdata$cens)
 	
 	HH <- getPseudoHazardFromTable(tmpsurv, startdate=rdata$year,
-	               startage=rdata$age*365.25 , matchdata=rdata, ratetable=slopop,
+	               startage=rdata$age*365.24 , matchdata=rdata, ratetable=slopop,
 	               age="age", year="year",
 	               rmap=list(sex=sex),
-	               agemin=18,
+	               agemin=18, scale=365.24,
 	               ratename = "poprate", 
 	               cumrateendname ="cumrateend", 
 	               cumrateentername ="cumrateenter", 

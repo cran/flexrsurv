@@ -412,9 +412,6 @@ if (requireNamespace("relsurv", quietly = TRUE) & requireNamespace("date", quiet
 	# data from package relsurv
 	data(rdata, package="relsurv")
 	
-	class(rdata$year)<-"integer"
-	
-	
 	# rate table from package relsurv
 	data(slopop, package="relsurv")
 	

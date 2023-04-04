@@ -7,29 +7,22 @@
 \title{Generic method for prediction of spline function}
 
 \description{
-predictSpline is a generic function used to predict spline functions \eqn{f(x) = \sum \beta_i b_i(x)}.
-  
-  The default S3 method is for spline basis specified by its type, knots and degree.
-}
+  Predict a spline function by specifying its type, knots, degree and coefficients }
+
 \usage{
   predictSpline (object, x, \dots)
    
    \method{predictSpline}{default}(object=c("b-spline", "tp-spline"), 
-		x, beta=1, 
-		knots, degree, keep.duplicates = FALSE, ... )
+		x, knots, degree, keep.duplicates = FALSE, coef=1, ... )
 }
 
 \arguments{
 \item{object}{
-the type of spline to be predicted ("b-spline" the default, or "tp-spline") 
+the type of spline to be predicted ("b-spline", the default, or "tp-spline") 
 }
 \item{x}{
   Vector of values at wich to predict the spline function. 
 }
-\item{beta}{
-  vector of coefficient of the spline function. 
-}
-
 \item{knots, degree}{
   knots and degree of the relational model.
 }
@@ -37,6 +30,10 @@ the type of spline to be predicted ("b-spline" the default, or "tp-spline")
   Should duplicate interior knots be kept or removed. Defaults is \code{FALSE}, which removes
   duplicate knots with a warning if duplicate interior knots are found.
 }
+\item{coef}{
+  vector of coefficient of the spline function. 
+}
+
 \item{\dots}{not used}
 
 }
@@ -60,7 +57,7 @@ the type of spline to be predicted ("b-spline" the default, or "tp-spline")
 	
 	predspline <- predictSpline("b-spline", 
 		x= seq(from=-3, to = 3, by=.1), 
-		beta = .5 * 1:5, 
+		coef = .5 * 1:5, 
 		knots=c(-3,0,3), degree=3)
 	plot(seq(from=-3, to = 3, by=.1), predspline)
 
