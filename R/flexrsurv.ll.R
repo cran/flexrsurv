@@ -107,7 +107,7 @@ flexrsurv.ll <- function(formula=formula(data),
 	}
 	
 	
-	# pour l'intercept, voir avec l'option utilisée dans gamma0(t)
+	# for the intercept, see option for the baseline hazard gamma0(t)
 	intercept <- attr(mt, "intercept")
 	
 	Y <- model.extract(mf, "response")

@@ -76,7 +76,7 @@ flexrsurv <- function(formula=formula(data),
 		vartype <- "oim"
 	}
 	
-	# Validité des arguments
+	# check options
 	#----------------------------------------------------------------------------------------
 	
 	if (int_meth == "BANDS"){

@@ -14,7 +14,7 @@ flexrsurv.ll.fit<-function (X0, X, Z, Y,
 {
 	
 # flexible relative survival model using full likelihood and 
-# non iteratif, paramétrage identifiable
+# identifiable parametrization
 #
 	#
 	#         input :
@@ -31,15 +31,15 @@ flexrsurv.ll.fit<-function (X0, X, Z, Y,
 	# Y : object of class Surv
 	# expected_rate : expected rate at event time T
 	# weights : vector of weights  : LL = sum_i w_i ll_i
-	#  Spline_t0, spline object for baseline hazard, with evaluate() méthod
+	#  Spline_t0, spline object for baseline hazard, with evaluate() method
 	#  Intercept_t0=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	#  Intercept_t=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
 	# init : list  of initial values
 	# fastinit : if init=NULL, when fastinit=TRUE, init=(gamma0=rep(log(sum(status)/sum(time*(status==1)), ngamma0), othercoef=0)
 	#                          when fastinit=FALSE, init in 3 steps: initgamma0, initalpha0alpah, initbeta0beta
 	# optime.control : control parameters/options for optim()
-	# method : optimisation method (optim_meth) for optim(), numerical intégration method (int_meth),
+	# method : optimisation method (optim_meth) for optim(), numerical integration method (int_meth),
 	# vartype : type of variance matrix : observed inf. mat (oim inv(-H)), robust/sandwich (robust H inv(S'S) H ),
 	#           outer product of the gradients (opg inv(S'S)), wher where S is the matrix of scores
 	

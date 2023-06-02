@@ -39,7 +39,7 @@ opg_flexrsurv_G0A0B0AB<-function(allparam, Y, X0, X, Z,
 	# Y : object of class Surv
 	# X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
 	# X : log lineair but time dependante variable 
-	# Z : objesct of class DeSignMatrixLPHNLL of time dépendent variables (spline basis expended)
+	# Z : objesct of class DeSignMatrixLPHNLL of time dependent variables (spline basis expended)
 	# expected_rate : expected rate at event time T
 	# weights : vector of weights  : LL = sum_i w_i ll_i
 	# step : lag of subinterval for numerical integration fr each observation

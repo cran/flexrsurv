@@ -117,7 +117,7 @@ opg_flexrsurv_fromto_1WCEaddBr0Control<-function(allparam,
 	# nTbasis : number of time spline basis for NPH or NLL effects
 	# nX0   : nb of PH variables dim(X0)=c(nobs, nX0)
 	# nX    : nb of NPHLIN variables dim(X)=c(nobs, nX)
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	# Intercept_t_NPH vector of intercept option for NPH spline (=FALSE when X is NLL too, ie in case of remontet additif NLLNPH)
 	# nW    : nb of WCE variables dim(W)=c(nobs, nW)
 	# iWbeg, iWend : coef of the ith WCE variable is eta0[iWbeg[i]:iWend[i]]
@@ -254,7 +254,7 @@ opg_flexrsurv_fromto_1WCEaddBr0Control<-function(allparam,
 	################################################################################
 	################################################################################
 	################################################################################
-	#****** eventterm : on peut peut-être faire un vecteur de lenght = nombre d'individu (correspondant au fin de suivi des individus)
+	#***** 
 	
 	# WCE at end of interval
 	# eta0 = NULL because IS_W = ISpline_W * eta0
@@ -301,8 +301,8 @@ opg_flexrsurv_fromto_1WCEaddBr0Control<-function(allparam,
 			modified_ratecontrol <-  expected_ratecontrol * (1 + exp(-expected_logit_endcontrol))/(1+ 1/Y2C) * evalderivbrasscontrol
 			# modified cumrate is computed once for each individual (from t_enter to t_end of folowup)
 			modified_cumratecontrol <- log((1 + Y2C)/(1 + Y1C))
-#print("+++++++++++++++++++++++++++++++++      vérif Control -------------------------------")
-#print(cbind(modified_cumratecontrol, Y1C, E1C,expected_logit_entercontrol)[expected_logit_entercontrol < -1000000000,])
+
+
 			
 			
 			if( nBX0){
@@ -400,8 +400,8 @@ opg_flexrsurv_fromto_1WCEaddBr0Control<-function(allparam,
 		
 		modified_rate <-  expected_rate * (1 + exp(-expected_logit_end))/(1+ 1/Y2E) * evalderivbrass
 		modified_cumrate <- log((1 + Y2E)/(1 +  Y1E))
-#print("+++++++++++++++++++++++++++++++++      vérif Exposed -------------------------------")
-#print(cbind(modified_cumrate, Y1E, E1E, expected_logit_enter)[expected_logit_enter < -1000000000,])
+
+
 		
 	}
 	

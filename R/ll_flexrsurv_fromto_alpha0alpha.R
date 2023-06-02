@@ -34,13 +34,13 @@ ll_flexrsurv_fromto_alpha0alpha<-function(alpha0alpha, beta0, beta, gamma0,
 	# Nstep : number of lag for each observation
 	# intTD : function to perform numerical integration 
 	# intweightfunc : function to compute weightsfor numerical integration
-	#  Spline_t0, spline object for baseline hazard, with evaluate() méthod
+	#  Spline_t0, spline object for baseline hazard, with evaluate() method
 	#  Intercept_t0=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
 	# nT0basis : number of spline basis for NPHLIN effects
 	# nX0   : nb of PH variables dim(X0)=c(nobs, nX0)
 	# nX    : nb of NPHLIN variables dim(X)=c(nobs, nX)
 	# nTbasis : number of time spline basis
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	# Intercept_t_NPH vector of intercept option for NPH spline (=FALSE when X is NLL too, ie in case of remontet additif NLLNPH)
 	#  ... not used args
 	# the function do not check the concorcance between length of parameter vectors and the number of knots and the Z.signature

@@ -3,10 +3,7 @@
 \title{Computes expected hazards with respect to a reference life table
 }
 \description{
-
-*** à mettre à jour  ***
-
-return the cumulative hazard and the hazard rate of subjects in a reference life table
+return the cumulative pseudo hazard and the hazard rate of subjects in a reference life table
 }
 \usage{
 getPseudoHazardFromTable(Y, startdate, startage, matchdata = NULL, 

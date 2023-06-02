@@ -63,15 +63,15 @@ flexrsurv.ll.fromto.brass0.wceadd.fitCoptim<-function (Y, X0, X, Z, W,
 	# expected_rate : expected rate at event time T
 	# expected_logit : expected logit at event time T (used in the Brass model
 	# weights : vector of weights  : LL = sum_i w_i ll_i
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	#  Intercept_t=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
-	#  ISpline_W, list of one integrated spline objects for the WCE effect,  with evaluate() méthod
+	#  ISpline_W, list of one integrated spline objects for the WCE effect,  with evaluate() method
 	#  Intercept_W=TRUE, option for evaluate the ith wce effect, = TRUE all the basis, =FALSE all but first basis 
-	#  Spline_B, spline objects for cohort-independent Brass function,  with evaluate() méthod
+	#  Spline_B, spline objects for cohort-independent Brass function,  with evaluate() method
 	#  Intercept_B=FALSE, option for evaluate the brass function = TRUE all the basis, =FALSE all but first basis 
 	# init : list  of initial values
 	# optime.control : control parameters/options for optim()
-	# method : optimisation method (optim_meth) for optim(), numerical intégration method (int_meth),
+	# method : optimisation method (optim_meth) for optim(), numerical integration method (int_meth),
 	# vartype : type of variance matrix : observed inf. mat (oim inv(-H)), robust/sandwich (robust H inv(S'S) H ),
 	#           outer product of the gradients (opg inv(S'S)), wher where S is the matrix of scores
 	# namebrass="CorrectionTable" : used to build the names of the parameters of the brass function

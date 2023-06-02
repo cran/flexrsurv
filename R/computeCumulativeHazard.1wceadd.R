@@ -51,7 +51,7 @@
 	# nTbasis : number of time spline basis for NPH or NLL effects
 	# nX0   : nb of PH variables dim(X0)=c(nobs, nX0)
 	# nX    : nb of NPHLIN variables dim(X)=c(nobs, nX)
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	# Intercept_t_NPH vector of intercept option for NPH spline (=FALSE when X is NLL too, ie in case of remontet additif NLLNPH)
 	#  ... not used args
 	# the function do not check the concorcance between length of parameter vectors and the number of knots and the Z.signature

@@ -28,9 +28,9 @@ ll_flexrsurv_fromto_gamma0_bh<-function(gamma0, alpha0, beta0, alpha, beta, Y, X
 	# Step : object of class "NCLagParam" or "GLMLagParam"
 	# intTD : function to perform numerical integration 
 	# intweightfunc : function to compute weightsfor numerical integration
-	#  Spline_t0, spline object for baseline hazard, with evaluate() méthod
+	#  Spline_t0, spline object for baseline hazard, with evaluate() method
 	#  Intercept_t0=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	# Intercept_t_NPH vector of intercept option for NPH spline (=FALSE when X is NLL too, ie in case of remontet additif NLLNPH)
 	# nT0basis : number of spline basis for NPHLIN effects
 	# nX0   : nb of PH variables dim(X0)=c(nobs, nX0)

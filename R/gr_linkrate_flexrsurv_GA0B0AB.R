@@ -29,7 +29,7 @@ gr_link_flexrsurv_GA0B0AB<-function(allparam, Y, X0, X, Z,
 	#
 	# X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
 	# X : log lineair but time dependante variable 
-	# Z : objesct of class DeSignMatrixLPHNLL of time dépendent variables (spline basis expended)
+	# Z : objesct of class DeSignMatrixLPHNLL of time dependent variables (spline basis expended)
 	# Knots_t0=NULL,Intercept_t0=FALSE, degree_t0=3, Boundary.knots_t0 time spline parameters for baseline hazard
 	# Knots_t=NULL,Intercept_t=FALSE, degree_t0=, Boundary.knots_t  time spline parameters for time-dependant effects (same basis for each TD variable)
 	# nT0basis : number of spline basis for NPHLIN effects

@@ -37,7 +37,7 @@
 	# Y : object of class Surv
 	# X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
 	# X : log lineair but time dependante variable 
-	# Z : objesct of class DeSignMatrixLPHNLL of time dépendent variables (spline basis expended)
+	# Z : objesct of class DeSignMatrixLPHNLL of time dependent variables (spline basis expended)
 	# step : lag of subinterval for numerical integration fr each observation
 	# Nstep : number of lag for each observation
 	# intTD : function to perform numerical integration 
@@ -135,7 +135,7 @@
 	# Y : object of class Surv
 	# X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
 	# X : log lineair but time dependante variable 
-	# Z : objesct of class DeSignMatrixLPHNLL of time dépendent variables (spline basis expended)
+	# Z : objesct of class DeSignMatrixLPHNLL of time dependent variables (spline basis expended)
 	# step : lag of subinterval for numerical integration fr each observation
 	# Nstep : number of lag for each observation
 	# intTD : function to perform numerical integration 

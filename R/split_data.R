@@ -2,7 +2,7 @@ split.data <- function(jeudata, bands, entry, exit, fail, include=names(jeudata)
 {
 	
 	
-	# Préparation et split des données
+	# Split data in jeudata with breacks in parameter bands
 	#----------------------------------
 	
 	# entry is 1e-12 to prevent further problems
@@ -37,13 +37,13 @@ split.data <- function(jeudata, bands, entry, exit, fail, include=names(jeudata)
 	splitjeudata$rate <- splitjeudata$newrate
 	
 	
-	#création de la variable interval en numérique !!!
+	# if .fail == 0, the running time (intnum) is the middle of exit and entry time
 	#-------------------------------------------------
 	splitjeudata$intnum<- ifelse(splitjeudata$.fail==1,
 			splitjeudata$.exit,
 			(splitjeudata$.entry+splitjeudata$.exit)/2)
 	
-	# on renomme l'intervalle numérique time (utilisé dans la formule)
+	# rename the runnig time name (intnum vs name.runningtime)
 	names(splitjeudata)<- ifelse(names(splitjeudata)=="intnum", name.runningtime, names(splitjeudata))
 	
 	return(splitjeudata)  

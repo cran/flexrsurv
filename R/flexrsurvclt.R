@@ -139,7 +139,7 @@ flexrsurvclt <- function(formula=formula(data),
 	}
 	
 	
-	# Validité des arguments
+	# check options
 	#----------------------------------------------------------------------------------------
 	
 	if (int_meth == "BANDS"){

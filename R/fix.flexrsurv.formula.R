@@ -207,7 +207,7 @@ fix.flexrsurv.formula <- function(formula, data,
 	
 	
 	# set type of splines
-	# evaluate degrees à knots & boundaries
+	# evaluate degrees at knots & boundaries
 	if(length(NamesNLLVars) >0){
 		for (i in attr(Terms, "specials")[["NLL"]]){
 			thecall <-  match.call(NLL, attr(Terms,"variables")[[i+1]])

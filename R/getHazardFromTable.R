@@ -172,7 +172,7 @@ getHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 
 #  cumrateend <- cumrateend0 - cumrateminage
 	
-# le taux à la sortie
+# rate at exit
 	n <- length(startdate)
 	rateend <- rep(0, n)
 	if(verbose){

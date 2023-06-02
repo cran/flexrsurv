@@ -185,11 +185,13 @@ model for the table table
       maximum of time period which is analysed. Default is \code{max(c(bands, timevar))}
 	  }
   \item{model}{
-      character string specifying the type of model for both non-proportional and non linear effects.    
-The model \code{method=="additive"} assumes effects as explained in Remontet et al.(2007), the model \code{method=="multiplicative"} assumes effects as explained in Mahboubi et al. (2011).
+      character string specifying the type of model for both non-proportional and non linear effects. 
+      The model \code{method=="additive"} assumes effects as explained in Remontet et al.(2007), the model \code{method=="multiplicative"} 
+      assumes effects as explained in Mahboubi et al. (2011).
 }
    \item{rate}{
-      a vector of the background rate for a relevant comparative population to be used in the fitting process. Should be a numeric vector (for relative survival model). 
+      a vector of the background rate for a relevant comparative population to be used in the fitting process. 
+      Should be a numeric vector (for relative survival model). 
      \code{rate} is evaluated in the same way as variables in \code{formula}, that is first 
      in \code{data} and then in the environment of \code{formula}.
 }
@@ -236,7 +238,8 @@ A REMPLIR
       \code{method_correction="cohort"} when the provided logit are those of the survival of individuals;
       \code{method_correction="period"} when the provided logit are those of the survival fuction of age distribution by period.
 }   \item{weights}{
-      an optional vector of weights to be used in the fitting process. Should be NULL or a numeric vector. If not null, the total likelihood is the weighted sum of individual likelihood. 
+      an optional vector of weights to be used in the fitting process. Should be NULL or a numeric vector. 
+      If not null, the total likelihood is the weighted sum of individual likelihood. 
 } 
   \item{na.action}{
       a missing-data filter function, applied to the model.frame. If \code{NULL}, default is \code{options()$na.action}.
@@ -270,7 +273,10 @@ A REMPLIR
       starting values of the parameters.  
 }
   \item{initbyglm}{
-      a logical value indicating indicating how are found or refined init values. If TRUE, the fitting method described in Remontet et al.(2007) is ued to find or refine starting values. This may speedup the fit. If FALSE, the maximisation of the likelihood starts at values given in \code{init}. If \code{init=NULL}, the starting values correspond to a constant net hazard equal to the ratio of the number of event over the total number of person-time.
+      a logical value indicating indicating how are found or refined init values. If TRUE, the fitting method described in Remontet et al.(2007) 
+      is ued to find or refine starting values. This may speedup the fit. If FALSE, the maximisation of the likelihood starts at values 
+      given in \code{init}. If \code{init=NULL}, the starting values correspond to a constant net hazard equal to the ratio of the number 
+      of event over the total number of person-time.
 }
    \item{initbands}{
       bands used to split data when \code{initbyglm=TRUE}.
@@ -294,13 +300,21 @@ A REMPLIR
       a list of control parameters passed to the \code{\link[stats:glm]{glm()}} function when \code{method="glm"}. 
 }
   \item{vartype}{
-      character string specifying the type of variance matrix computed by \code{flexrsurv}: the inverse of the hessian matrix computed at the MLE estimate (ie. the inverse of the observed information matrix) if \code{vartype="oim"}, the inverse of the outer product of the gradients if \code{vartype="opg"}. The variance is not computed when \code{vartype="none"}.
+      character string specifying the type of variance matrix computed by \code{flexrsurv}: the inverse of the hessian matrix computed 
+      at the MLE estimate (ie. the inverse of the observed information matrix) if \code{vartype="oim"}, the inverse of the outer product of 
+      the gradients if \code{vartype="opg"}. The variance is not computed when \code{vartype="none"}.
 }
   \item{varmethod}{
-      character string specifying the method to compute the hessian matrix when \code{vartype="oim"}. If \code{varmethod="oim"}, the hessian matrixe is computed by \code{\link[stats:optim]{optim}}. If \code{varmethod="numDeriv.hessian"}, the hessian matrix is computed by \code{\link[numDeriv:hessian]{numDeriv:hessian}} with \code{method="Richardson"}. If \code{varmethod="numDeriv.jacobian"}, the hessian matrixe is computed by \code{\link[numDeriv:jacobian]{numDeriv:jacobian}} with \code{method="Richardson"}. 
+      character string specifying the method to compute the hessian matrix when \code{vartype="oim"}. If \code{varmethod="oim"}, 
+      the hessian matrixe is computed by \code{\link[stats:optim]{optim}}. If \code{varmethod="numDeriv.hessian"}, 
+      the hessian matrix is computed by \code{\link[numDeriv:hessian]{numDeriv:hessian}} with \code{method="Richardson"}. 
+      If \code{varmethod="numDeriv.jacobian"}, the hessian matrixe is computed by \code{\link[numDeriv:jacobian]{numDeriv:jacobian}} 
+      with \code{method="Richardson"}. 
 }
   \item{numDeriv.method.args}{
-      arguments passed to \code{\link[numDeriv:hessian]{numDeriv:hessian}} or \code{\link[numDeriv:jacobian]{numDeriv:jacobian}} when \code{varmethod="numDeriv.hessian"} or \code{varmethod="numDeriv.jacobian"}. Arguments not specified remain with their default values as specified in details. See \code{\link[numDeriv:grad]{numDeriv:grad}} for details about these parameters.
+      arguments passed to \code{\link[numDeriv:hessian]{numDeriv:hessian}} or \code{\link[numDeriv:jacobian]{numDeriv:jacobian}} 
+      when \code{varmethod="numDeriv.hessian"} or \code{varmethod="numDeriv.jacobian"}. Arguments not specified remain with their 
+      default values as specified in details. See \code{\link[numDeriv:grad]{numDeriv:grad}} for details about these parameters.
 }
   \item{debug}{
     control the volum of intermediate output
@@ -308,7 +322,8 @@ A REMPLIR
 }
 
 \details{
-   A full description of the additive and the multiplicative both non-linear and non-proportional models is given respectively in Remontet (2007) and Mahboubi (2011).
+   A full description of the additive and the multiplicative both non-linear and non-proportional models is given respectively 
+   in Remontet (2007) and Mahboubi (2011).
    
    \code{flexrsurv.ll} is the workhorse function: it is not normally called
   directly.

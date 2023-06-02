@@ -1,8 +1,11 @@
 NEWS about R package flexrsurv
-
+      
+Version 2.0.17 - 2023-06-02
+      o the package is now encoded in UTF-8 
+      
 Version 2.0.16 - 2023-01-02
       o new method extractAIC.flexrsurv
-      o bug correction in getPsuedoHazardFromTable and  getBrassPseudoHazardFromTable
+      o bug correction in getPsuedoHazardFromTable and getBrassPseudoHazardFromTable
       o corrections needed for R 4.3
 
 Version 2.0.15 - 2023-01-02

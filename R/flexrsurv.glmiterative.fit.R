@@ -106,7 +106,7 @@ flexrsurv.glmiterative.fit <- function(formula, data,
 	XX <- vector("list",n) ;
 	TT <- vector("list",n) ;
 	
-	# alpha[[i]] = valeurs d'initialisation des coefficients alpha pour le ième effet, ...
+	# alpha[[i]] = init values of ith coeff alpha, ...
 	alpha <- vector("list",n)                       # if is.NPHNLL[i], alpha[[i]] is the running set of coef of alpha(x) 
 	beta <- vector("list",n)                        # if is.NPHNLL[i], beta[[i]]  is the running set of coef of beta(t)
 	ALPHAx <- matrix(0,ncol=n, nrow=dim(data)[1])   # if is.NPHNLL[i], ALPHAx[[i]] = alpha(x) = XX %*% alpha + min(x)

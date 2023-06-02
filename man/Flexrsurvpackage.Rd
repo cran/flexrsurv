@@ -28,7 +28,7 @@ The main function is \code{flexrsurv()}
 
 }
 \author{
-Michel Grzebyk and Isabelle Clerc-Urmèss, with contributions from the CENSUR working survival group. \cr
+Michel Grzebyk and Isabelle Clerc-UrmÃ¨s, with contributions from the CENSUR working survival group. \cr
 
 Maintainer: <michel.grzebyk@inrs.fr>
 }

@@ -131,12 +131,12 @@ gr_ll_flexrsurv_fromto_GA0B0ABE0Br0PeriodControl<-function(allparam,
 	# intTD : function to perform numerical integration 
 	# intweightfunc : function to compute weightsfor numerical integration
 	# nT0basis : number of spline basis 
-	#  Spline_t0, spline object for baseline hazard, with evaluate() méthod
+	#  Spline_t0, spline object for baseline hazard, with evaluate() method
 	#  Intercept_t0=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
 	# nTbasis : number of time spline basis for NPH or NLL effects
 	# nX0   : nb of PH variables dim(X0)=c(nobs, nX0)
 	# nX    : nb of NPHLIN variables dim(X)=c(nobs, nX)
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	# Intercept_t_NPH vector of intercept option for NPH spline (=FALSE when X is NLL too, ie in case of remontet additif NLLNPH)
 	# nW    : nb of WCE variables dim(W)=c(nobs, nW)
 	# iWbeg, iWend : coef of the ith WCE variable is eta0[iWbeg[i]:iWend[i]]
@@ -426,7 +426,7 @@ gr_ll_flexrsurv_fromto_GA0B0ABE0Br0PeriodControl<-function(allparam,
 	################################################################################
 	################################################################################
 	################################################################################
-	#****** eventterm : on peut peut-être faire un vecteur de lenght = nombre d'individu (correspondant au fin de suivi des individus)
+	#***** 
 # the contribution of the WCE to the excess rate at TFinal is in WCEContrib[LastId, ] 
 	if(nW){
 		# eta0 = NULL because IS_W = ISpline_W * eta0
@@ -497,8 +497,8 @@ gr_ll_flexrsurv_fromto_GA0B0ABE0Br0PeriodControl<-function(allparam,
 			# modified cumrate is computed once for each individual (aggregated accors periods from t_enter to t_end of folowup)
 #		modified_cumratecontrol <- log((1 + Y2C)/(1 + Y1C))
 			modified_cumratecontrol <- tapply(modified_cumratebyPcontrol, as.factor(Id_byperiodcontrol), FUN=sum)
-#print("+++++++++++++++++++++++++++++++++      vérif Control -------------------------------")
-#print(cbind(modified_cumratecontrol, Y1C, E1C,expected_logit_entercontrol)[expected_logit_entercontrol < -1000000000,])
+
+
 			
 			if( nBX0){
 				BPHtermcontrol <-exp(BX0control %*% allparam[ibalpha0])
@@ -619,8 +619,8 @@ gr_ll_flexrsurv_fromto_GA0B0ABE0Br0PeriodControl<-function(allparam,
 		
 		#		modified_cumratecontrol <- log((1 + Y2C)/(1 + Y1C))
 		modified_cumrate <- tapply(modified_cumratebyP, as.factor(Id_byperiod), FUN=sum)
-#print("+++++++++++++++++++++++++++++++++      vérif Exposed -------------------------------")
-#print(cbind(modified_cumrate, Y1E, E1E, expected_logit_enter)[expected_logit_enter < -1000000000,])
+
+
 	}
 	
 	if( nBX0){

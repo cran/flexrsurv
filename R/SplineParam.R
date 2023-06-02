@@ -823,7 +823,7 @@ setMethod("getInteriorKnots",signature("TPSplineBasis"),
 ###################################################################################
 
 
-print.SplineBasis<-function(object) { 
+show.SplineBasis<-function(object) { 
 	cat(class(object),"\n")
 	cat("Order: ",object@degree+1,"\n",
 			"Degree: ",object@degree,"\n",
@@ -834,7 +834,7 @@ print.SplineBasis<-function(object) {
 	invisible(object)
 }
 
-print.TPSplineBasis<-function(object) { 
+show.TPSplineBasis<-function(object) { 
 	cat(class(object),"\n")
 	cat("Order: ",object@degree+1,"\n",
 			"Degree: ",object@degree+1,"\n",
@@ -846,12 +846,12 @@ print.TPSplineBasis<-function(object) {
 	invisible(object)
 }
 
-setMethod("show","BSplineBasis",  print.SplineBasis)
-setMethod("show","BSplineBasis",  print.SplineBasis)
-setMethod("show","EBSplineBasis",  print.SplineBasis)
-setMethod("show","LEBSplineBasis",print.SplineBasis)
-setMethod("show","R2bBSplineBasis",print.SplineBasis)
-setMethod("show","TPSplineBasis", print.TPSplineBasis)
+setMethod("show","BSplineBasis",  show.SplineBasis)
+setMethod("show","BSplineBasis",  show.SplineBasis)
+setMethod("show","EBSplineBasis",  show.SplineBasis)
+setMethod("show","LEBSplineBasis",show.SplineBasis)
+setMethod("show","R2bBSplineBasis",show.SplineBasis)
+setMethod("show","TPSplineBasis", show.TPSplineBasis)
 
 
 ###################################################################################

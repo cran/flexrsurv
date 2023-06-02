@@ -39,7 +39,7 @@ flexrsurv.ll.fromto.brass0.period.wce.fitCoptim<-function (Y, X0, X, Z, W,
 ) 
 {
 # flexible relative survival model using full likelihood and 
-# non iteratif, paramétrage identifiable
+# identifiable parametrization
 # NLL, NPH, NPHNLL and WCE effects
 	# corection of lifetable according to generalized brass method
 	# Cohort-independent generalized Brass model in an age-cohort table
@@ -74,19 +74,19 @@ flexrsurv.ll.fromto.brass0.period.wce.fitCoptim<-function (Y, X0, X, Z, W,
 	# expected_logit_enter_byperiod, : expected logit of periode survival at entry of each period (used in the Brass model
 	# weights_byperiod,  : weight of each period (used in the Brass model weights_byperiod = weight[Id_byperiod]
 	# Id_byperiod,    : index in the Y object : XX_byperiod[i] corrsponds to the row Id_byperiod[i] of Y, X, Z, ...
-	#  Spline_t0, spline object for baseline hazard, with evaluate() méthod
+	#  Spline_t0, spline object for baseline hazard, with evaluate() method
 	#  Intercept_t0=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	#  Intercept_t=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
-	#  ISpline_W, list of nW integrated spline objects for WCE effects,  with evaluate() méthod
+	#  ISpline_W, list of nW integrated spline objects for WCE effects,  with evaluate() method
 	#  Intercept_W[i]=FALSE, option for evaluate the ith wce effect, = TRUE all the basis, =FALSE all but first basis 
-	#  Spline_B, spline objects for cohort-independent Brass function,  with evaluate() méthod
+	#  Spline_B, spline objects for cohort-independent Brass function,  with evaluate() method
 	#  Intercept_B=FALSE, option for evaluate the brass function = TRUE all the basis, =FALSE all but first basis 
 	# init : list  of initial values
 	# fastinit : if init=NULL, when fastinit=TRUE, init=(gamma0=rep(log(sum(status)/sum(time*(status==1)), ngamma0), othercoef=0)
 	#                          when fastinit=FALSE, init in 3 steps: initgamma0, initalpha0alpah, initbeta0beta
 	# optime.control : control parameters/options for optim()
-	# method : optimisation method (optim_meth) for optim(), numerical intégration method (int_meth),
+	# method : optimisation method (optim_meth) for optim(), numerical integration method (int_meth),
 	# vartype : type of variance matrix : observed inf. mat (oim inv(-H)), robust/sandwich (robust H inv(S'S) H ),
 	#           outer product of the gradients (opg inv(S'S)), wher where S is the matrix of scores
 	# namebrass="CorrectionTable" : used to build the names of the parameters of the brass function

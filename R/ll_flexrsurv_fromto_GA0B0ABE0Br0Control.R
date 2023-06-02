@@ -115,12 +115,12 @@ ll_flexrsurv_fromto_GA0B0ABE0Br0Control<-function(allparam,
 	# intTD : function to perform numerical integration 
 	# intweightfunc : function to compute weightsfor numerical integration
 	# nT0basis : number of spline basis 
-	#  Spline_t0, spline object for baseline hazard, with evaluate() méthod
+	#  Spline_t0, spline object for baseline hazard, with evaluate() method
 	#  Intercept_t0=FALSE, option for evaluate, = TRUE all the basis, =FALSE all but first basis 
 	# nTbasis : number of time spline basis for NPH or NLL effects
 	# nX0   : nb of PH variables dim(X0)=c(nobs, nX0)
 	# nX    : nb of NPHLIN variables dim(X)=c(nobs, nX)
-	#  Spline_t, spline object for time dependant effects,  with evaluate() méthod
+	#  Spline_t, spline object for time dependant effects,  with evaluate() method
 	# Intercept_t_NPH vector of intercept option for NPH spline (=FALSE when X is NLL too, ie in case of remontet additif NLLNPH)
 	# nW    : nb of WCE variables dim(W)=c(nobs, nW)
 	# iWbeg, iWend : coef of the ith WCE variable is eta0[iWbeg[i]:iWend[i]]
@@ -260,7 +260,7 @@ ll_flexrsurv_fromto_GA0B0ABE0Br0Control<-function(allparam,
 	################################################################################
 	################################################################################
 	################################################################################
-	#****** eventterm : on peut peut-être faire un vecteur de lenght = nombre d'individu (correspondant au fin de suivi des individus)
+	#***** 
 	
 	if(nW){
 		# eta0 = NULL because IS_W = ISpline_W * eta0

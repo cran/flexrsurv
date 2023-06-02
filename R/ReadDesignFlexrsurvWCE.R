@@ -12,8 +12,8 @@ ReadDesignFlexrsurvWCEI<-function(modframe,
 	# Z  : NPHNLL design matrix for multiplicative NLLNPH terms 
 	# W  : WCEI  design matrix
 	
-	# dans cette version, on ne gère pas les variables de type facteur.
-	# ainsi, un variable LIN peut être une indicatrice
+	# in this function, factor variables are not managed
+	# factor variables need to be defined in the datasetand the formula in terms of indicators
 	
 #print("ReadDesignFlexrsurvWCEI")
 	

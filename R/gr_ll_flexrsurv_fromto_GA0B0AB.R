@@ -33,7 +33,7 @@ gr_ll_flexrsurv_fromto_GA0B0AB<-function(allparam, Y, X0, X, Z,
 	#
 	# X0 : non-time dependante variable (may contain spline bases expended for non-loglinear terms)
 	# X : log lineair but time dependante variable 
-	# Z : objesct of class DeSignMatrixLPHNLL of time dépendent variables (spline basis expended)
+	# Z : objesct of class DeSignMatrixLPHNLL of time dependent variables (spline basis expended)
 	# expected_rate : expected rate at event time T
 	# weights : weights  : LL = sum_i w_i ll_i
 	# step : lag of subinterval for numerical integration fr each observation
