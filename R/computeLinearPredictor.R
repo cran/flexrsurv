@@ -105,17 +105,16 @@
 	if(nX + nZ){
 		# spline bases for each TD effect
 		YT <- evaluate(Spline_t, Y[,colEndTime], intercept=TRUE)
-		linpred <- PHterm + apply(YT * Zalphabeta, 1, sum)
+		linpred <- PHterm + apply(YT * Zalphabeta, 1, sum, simplify = TRUE)
 	} else {
 		linpred <- PHterm 
 	}
 	if(bhlink == "log"){
-		linpred <- linpred + YT0Gamma0
+		linpred <- as.vector(linpred + YT0Gamma0)
 	} else {
 		linpred <- cbind(linpred ,  YT0Gamma0)
-		dimnames(linpred)[[2]] <- c("linpred", "logbaseline")
+		dimnames(linpred)[[2]] <- c("linpred", "baseline")
 	}
-	
 	linpred
 }
 

@@ -3,6 +3,8 @@ predictCumulativeHazard <- function(object, ...) UseMethod("predictCumulativeHaz
 predictCumulativeHazard.flexrsurv <- function(object, newdata = NULL,
 		type=c("cumulative.rate", "cumulative.hazard", "cumulative", "cum", "survival", "surv", "netsurv"),
 		se.fit = FALSE, 
+		ci.fit = FALSE,
+		level = .95,
 		na.action = na.pass, ...){
 # predict cumulative hazard from 0 to time  
 	
@@ -201,7 +203,7 @@ predictCumulativeHazard.flexrsurv <- function(object, newdata = NULL,
 						degree=degree.Bh,
 						min=Min_T,
 						max=Max_T)
-
+				
 				nT0basis <- getNBases(Spline_t0) - 1 +  Intercept_t0
 				ngamma0 <- nT0basis
 				Spline_t <-TPSplineBasis(knots=knots.Bh,
@@ -367,10 +369,10 @@ predictCumulativeHazard.flexrsurv <- function(object, newdata = NULL,
 		alltheparameters[des$param2coef] <- object$coefficients
 		# computes linear predictors
 		
-		do.se.fit <- se.fit
-		if(se.fit){
+		do.se.fit <- se.fit | ci.fit
+		if(do.se.fit){
 			if(is.null(var)){
-				warning("the variance matrix of the parameters in NULL, standard error of cumulative hazards are not computed")
+				warning("the variance matrix of the parameters in NULL, unable to compute standard error and confidence interval of cumulative hazards are not computed")
 				stdErrorPredictors <- NULL
 				do.se.fit <- FALSE
 			}
@@ -477,20 +479,29 @@ predictCumulativeHazard.flexrsurv <- function(object, newdata = NULL,
 			}
 		}
 		
+		if(ci.fit){
+			qtnorm <- stats::qnorm(1 - (1 - level)/2)
+			stdErrorLogPredictors <- stdErrorPredictors/Predictors 
+			Predictors <- cbind(Predictors, Predictors * exp(qtnorm * stdErrorLogPredictors %o% c(-1, 1))) 
+			colnames(Predictors) <- c("fit", "lwr", "upr")
+			attr(Predictors, "level") <- level 
+		}
+		
 		
 		if (type=="surv"){
 			Predictors <- pmax(exp(-Predictors ), .Machine$double.eps)
-			if (do.se.fit) {
+			if (se.fit) {
 				stdErrorPredictors <- stdErrorPredictors * Predictors
 			}
 		}
 		
-		if (se.fit) {
-			# structure similar to predic.lm() 
-			pred <- list(fit=Predictors , se.fit=stdErrorPredictors)
+		# build results object
+		if(se.fit){
+			pred <- list(fit=Predictors, se.fit=stdErrorPredictors)
 		} else {
 			pred <- Predictors
 		}
+		
 		
 	}
 	

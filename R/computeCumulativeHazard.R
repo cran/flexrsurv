@@ -118,7 +118,7 @@
 	} else {
 		ret <- NPHterm 
 	}
-	ret
+	as.vector(ret)
 }
 
 
@@ -246,7 +246,7 @@
 	} else {
 		ret <- NPHterm 
 	}
-	ret
+	as.vector(ret)
 }
 
 
@@ -370,7 +370,7 @@
 	} else {
 		ret <- NPHterm 
 	}
-	ret
+	as.vector(ret)
 }
 
 .computeCumulativeHazard_fromto_GA0B0AB_bh<-function(allparam, Y, X0, X, Z, 
@@ -498,7 +498,7 @@
 	} else {
 		ret <- NPHterm 
 	}
-	ret
+	as.vector(ret)
 }
 
 # with WCE effect
@@ -669,7 +669,7 @@
 	} else {
 		ret <- NPHterm 
 	}
-	ret
+	as.vector(ret)
 }
 
 

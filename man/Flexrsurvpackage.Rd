@@ -1,9 +1,6 @@
 \name{flexrsurv-package}
-\Rdversion{2.0.11}
 \alias{flexrsurv-package}
 \alias{flexrsurvpackage}
-\alias{Flexrsurv-package}
-\alias{Flexrsurvpackage}
 \docType{package}
 \title{
 Package for flexible relative survival analyses
@@ -14,15 +11,7 @@ non-proportional effects and both non proportional and non linear effects, using
 Weighted Cumulative Index of Exposure effect, with correction model for the life table. 
 Both non proportional and non linear effects are described in Remontet et al. (2007) \doi{10.1002/sim.2656} and 
 Mahboubi et al. (2011) \doi{10.1002/sim.4208}. 
-}
-\details{
-\tabular{ll}{
-Package: \tab flexrsurv\cr
-Type: \tab Package\cr
-Version: \tab 2.0.11\cr
-Date: \tab 2022-08-23\cr
-License: \tab GPL(>)2.0)\cr
-}
+
 
 The main function is \code{flexrsurv()}
 

@@ -1,6 +1,4 @@
 \name{flexrsurvclt}
-\Rdversion{0.2}
-\alias{Flexrsurvclt}
 \alias{flexrsurvclt}
 \alias{flexrsurvclt.ll}
 

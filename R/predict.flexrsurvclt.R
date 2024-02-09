@@ -3,6 +3,8 @@ predict.flexrsurvclt <- function(object, newdata = NULL,
 		type = c("lp", "link", "risk", "hazard", "hazardrate", "rate", "loghazard", "log",
 				"lograte", "cumulative.rate", "cumulative.hazard", "cumulative", "cum", "survival", "surv", "netsurv", "clt", "correction"),
 		se.fit = FALSE,
+		ci.fit = FALSE,
+		level = .95,
 		na.action = na.pass, ...){
 	
 	type <- match.arg(type)
@@ -18,7 +20,7 @@ predict.flexrsurvclt <- function(object, newdata = NULL,
 		object$coefficients <- coef(object)[1:ndfexcess]
 		object$var <- object$var[1:ndfexcess,1:ndfexcess]
 		
-		return(NextMethod("predict", object, type=type, se.fit=se.fit, na.action=na.action, ...) )
+		return(NextMethod("predict", object, type=type, se.fit=se.fit, ci.fit = ci.fit, level = level, na.action=na.action, ...) )
 	}
 	
 }

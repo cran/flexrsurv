@@ -25,9 +25,9 @@ ReadDesignFlexrsurv<-function(modframe,
 	tempf <- as.formula(gsub("multiplicative", "additive", tempf, fixed=TRUE))
 	XZ<-model.matrix(Terms, data)[, drop = FALSE]
 	# names of the coef in the formula
+	# minus 1 to remove first column with intercept
 	
 	names_coef_XZ <- dimnames(XZ)[[2]][-1]
-	
 	
 	# remove the first T basis of each multiplicative NPHNLL effects
 	# 

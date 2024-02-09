@@ -101,6 +101,7 @@
 			varerr <- apply(gr[,ibh] * tcrossprod(gr[,ibh], var), 1, sum)
 			varerr <- cbind(varerr, apply(gr[,ibh] * tcrossprod(gr[,ilinpred], var), 1, sum))
 			varerr <- cbind(varerr, apply(gr[,ilinpred] * tcrossprod(gr[,ilinpred], var), 1, sum))
+			names(varerr) <- c("baseline", "coverr", "linpred")
 		}
 		stderr <- sqrt(varerr[,c(1,3)])
 	}

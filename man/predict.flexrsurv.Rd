@@ -14,7 +14,10 @@ hazard for a model fitted by \code{flexrsuv} }
              "rate", "loghazard", "log", "lograte",
              "cumulative.rate", "cumulative.hazard", "cumulative", "cum",
              "survival", "surv", "netsurv"),
-   se.fit=FALSE, na.action=na.pass, ...)
+   se.fit=FALSE,  		
+   ci.fit = FALSE,
+   level = .95,
+   na.action=na.pass, ...)
 }
 
 \arguments{
@@ -35,6 +38,12 @@ hazard (\code{"cum"}, \code{"cumulative.hazard"}, \code{"cumulative"}).
   if TRUE, pointwise standard errors are produced for the predictions
   (not available for cumulative hazard).
 }
+\item{ci.fit}{
+  if TRUE, confidence intervale are produced for the predictions.
+}
+\item{level}{
+   Confidence level.
+   }
 \item{na.action}{
   function determining what should be done with missing values in
   \code{newdata}. The default is to predict \code{NA}.
@@ -97,7 +106,7 @@ if (requireNamespace("relsurv", quietly = TRUE)) {
 	                 rate=slorate, data=rdata,
 	                 knots.Bh=1850,  # one interior knot at 5 years
 	                 degree.Bh=3,
-	                 Spline = "b-spline",
+	                 Spline = "b-spline", 
 	                 initbyglm=TRUE, 
 	                 int_meth= "BOOLE",
 	                 step=50
@@ -110,31 +119,28 @@ if (requireNamespace("relsurv", quietly = TRUE)) {
 	newrdata$age <- rep(60, length(rdata$age))
 	newrdata$sex <- factor(newrdata$sex, labels=c("m", "f"))
 	
-	
-	
-	linpred <- predict(fit, newdata=newrdata, type="lp", se.fit=TRUE )
-	predhazard <- predict(fit, newdata=newrdata, type="hazard" , se.fit=TRUE )
-	predcumhazard <- predict(fit, newdata=newrdata, type="cum", se.fit=TRUE)
-	
+	linpred <- predict(fit, newdata=newrdata, type="lp", ci.fit=TRUE)
+	predhazard <- predict(fit, newdata=newrdata, type="hazard" , ci.fit=TRUE)
+	predcumhazard <- predict(fit, newdata=newrdata, type="cum", ci.fit=TRUE)
 	
 	require(ggplot2)
 	tmp <- cbind(newrdata, linpred)
 	glp <- ggplot(tmp, aes(time, colour=sex))
-	glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
+	glp + geom_ribbon(aes(ymin = lwr, ymax = upr, fill=sex)) +
 	   geom_line(aes(y=fit)) +
 	   scale_fill_manual(values = alpha(c("blue", "red"), .3))
 	
 	
 	tmp <- cbind(newrdata, predhazard)
 	glp <- ggplot(tmp, aes(time, colour=sex))
-	glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
+	glp + geom_ribbon(aes(ymin = lwr, ymax = upr, fill=sex)) +
 	   geom_line(aes(y=fit))  +
 	   scale_fill_manual(values = alpha(c("blue", "red"), .3))
 	
 	
 	tmp <- cbind(newrdata, predcumhazard)
 	glp <- ggplot(tmp, aes(time, colour=sex))
-	glp + geom_ribbon(aes(ymin = fit-2*se.fit, ymax = fit + 2*se.fit, fill=sex)) +
+	glp + geom_ribbon(aes(ymin = lwr, ymax = upr, fill=sex)) +
 	   geom_line(aes(y=fit)) +
 	   scale_fill_manual(values = alpha(c("blue", "red"), .3))
 }

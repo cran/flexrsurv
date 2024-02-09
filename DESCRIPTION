@@ -1,8 +1,8 @@
 Package: flexrsurv
 Type: Package
 Title: Flexible Relative Survival Analysis
-Version: 2.0.17
-Date: 2023-06-02
+Version: 2.0.18
+Date: 2024-02-01
 Authors@R: c(
     person("Isabelle", "Clerc-Urmès", role="aut"), 
     person("Michel", "Grzebyk", role = c("aut", "cre"), email = "michel.grzebyk@inrs.fr"),
@@ -26,6 +26,6 @@ Imports: utils, orthogonalsplinebasis, methods, stats, Epi, Formula,
         formula.tools, splines, statmod, numDeriv, R.utils, Matrix
 Encoding: UTF-8
 NeedsCompilation: yes
-Packaged: 2023-06-02 12:34:34 UTC; michel.grzebyk
+Packaged: 2024-02-09 14:44:29 UTC; michel.grzebyk
 Repository: CRAN
-Date/Publication: 2023-06-02 17:00:02 UTC
+Date/Publication: 2024-02-09 16:10:02 UTC

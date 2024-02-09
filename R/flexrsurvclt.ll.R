@@ -1058,7 +1058,7 @@ flexrsurvclt.ll <- function(formula=formula(data),
 	} else {
 		objfit$logit_start <- NULL
 	}
-	if(!is.null(logit_start)){
+	if(!is.null(logit_end)){
 		objfit$logit_end <- logit_end
 	} else {
 		objfit$logit_end <- NULL

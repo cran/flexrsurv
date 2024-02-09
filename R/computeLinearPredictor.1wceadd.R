@@ -115,7 +115,7 @@
 		linpred <- PHterm 
 	}
 	if(wcelink == "log"){
-		linpred <- linpred + WCEevent 
+		linpred <- as.vector(linpred + WCEevent) 
 	} else {
 		linpred <- cbind(linpred ,  WCEevent)
 		dimnames(linpred)[[2]] <- c("linpred", "WCE")

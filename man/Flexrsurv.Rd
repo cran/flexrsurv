@@ -1,6 +1,4 @@
 \name{flexrsurv}
-\Rdversion{0.2}
-\alias{Flexrsurv}
 \alias{flexrsurv}
 \alias{flexrsurv.ll}
 

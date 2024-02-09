@@ -3,6 +3,8 @@ predict.flexrsurv <- function(object, newdata = NULL,
 		type = c("lp", "link", "risk", "hazard", "hazardrate", "rate", "loghazard", "log",
 				"lograte", "cumulative.rate", "cumulative.hazard", "cumulative", "cum", "survival", "surv", "netsurv"),
 		se.fit = FALSE,
+		ci.fit = FALSE,
+		level = .95,
 		na.action = na.pass, ...){
 	
 	type <- match.arg(type)
@@ -41,11 +43,11 @@ predict.flexrsurv <- function(object, newdata = NULL,
 #      pred <- predict.glm(object, newdata, type, se.fit, dispersion = NULL, terms, na.action, ...)
 #    }
 #    else {
-		pred <- predictHazard.flexrsurv(object, newdata, type, se.fit,  na.action, ...)
+		pred <- predictHazard.flexrsurv(object, newdata, type, se.fit, ci.fit, level, na.action, ...)
 #    }
 	} else {
 # cummulative rate
-		pred <- predictCumulativeHazard.flexrsurv(object, newdata, type, se.fit, na.action, ...)
+		pred <- predictCumulativeHazard.flexrsurv(object, newdata, type, se.fit, ci.fit, level, na.action, ...)
 	}
 	pred
 }

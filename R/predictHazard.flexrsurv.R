@@ -2,7 +2,9 @@ predictHazard <- function(object, ...) UseMethod("predictHazard")
 
 predictHazard.flexrsurv <- function(object, newdata = NULL,
 		type=c("lp", "link", "terms", "risk", "hazard", "hazardrate", "rate", "loghazard", "log", "lograte"),
-		se.fit = FALSE, 
+		se.fit = FALSE,
+		ci.fit = FALSE,
+		level = .95,
 		na.action = na.pass, ...){
 	
 	
@@ -25,7 +27,7 @@ predictHazard.flexrsurv <- function(object, newdata = NULL,
 		stop("not yet implemented")
 	}
 	
-	if ((missing(newdata) || is.null(newdata)) && !se.fit &&  type != "terms" ){
+	if ((missing(newdata) || is.null(newdata)) && !se.fit && !ci.fit &&  type != "terms" ){
 		pred <- switch(type, link = object$linear.predictors, 
 				risk = object$fitted.values)
 		if (!is.null(na.action)) {
@@ -104,7 +106,7 @@ predictHazard.flexrsurv <- function(object, newdata = NULL,
 						degree=degree.Bh,
 						min=Min_T,
 						max=Max_T)
-
+				
 				nT0basis <- getNBases(Spline_t0) - 1 +  Intercept_t0
 				ngamma0 <- nT0basis
 				Spline_t <-TPSplineBasis(knots=knots.Bh,
@@ -269,7 +271,8 @@ predictHazard.flexrsurv <- function(object, newdata = NULL,
 		alltheparameters <- rep(0, length(object$coefficients))
 		alltheparameters[des$param2coef] <- object$coefficients
 		# computes linear predictors
-		
+
+		do.se.fit <- se.fit || ci.fit
 		if ( type != "terms" ){
 			linpred <- .computeLinearPredictor_GA0B0AB(allparam=alltheparameters,
 					Y=Y, X0=X0, X=X, Z=Z,
@@ -283,7 +286,7 @@ predictHazard.flexrsurv <- function(object, newdata = NULL,
 					Spline_t = Spline_t, Intercept_t_NPH=Intercept_t_NPH,
 					bhlink=bhlink,
 					debug=10000)    
-			if (se.fit) {
+			if ( do.se.fit) {
 				stderr <- .computeStdErrorLinearPredictor_GA0B0AB(allparam=alltheparameters,
 						var=object$var,
 						Y=Y, X0=X0, X=X, Z=Z,
@@ -314,7 +317,7 @@ predictHazard.flexrsurv <- function(object, newdata = NULL,
 #                                                               terms = terms,
 #                                                               debug=FALSE)
 #      
-#      if (!se.fit) {
+#      if (do.se.fit) {
 #        stdErrorLinearPredictors <- .computeStdErrorTermsLinearPredictor_GA0B0AB(allparam=alltheparameters,
 #                                                                                 Y=Y, X0=X0, X=X, Z=Z,
 #                                                                                 nT0basis=nT0basis,
@@ -330,31 +333,66 @@ predictHazard.flexrsurv <- function(object, newdata = NULL,
 #      }
 		} 
 		
-		if (type=="risk"){
+		if(ci.fit){
+			qtnorm <- stats::qnorm(1 - (1 - level)/2)
 			if(bhlink == "log"){
-				linearPredictors <- pmax(exp(linpred ), .Machine$double.eps)
-				if (se.fit) {
-					stdErrorLinearPredictors <- stderr * linearPredictors
-				}
+				ci.linpred <- linpred + stderr %o% c(-1, 1) * qtnorm 
+				colnames(ci.linpred) <- c("lwr", "upr")
 			} else {
-				linearPredictors <- pmax(linpred[,1] * exp(linpred[,2] ), .Machine$double.eps)
-				if (se.fit) {
-					varerr <- attr(stderr, "varerr")
-					stdErrorLinearPredictors <- linearPredictors * (varerr[,1]/linpred[,1]^2 + 2*varerr[,2]/linpred[,1] + varerr[,3])
-				}
-			}
-		} else {
-			linearPredictors <- linpred
-			if (se.fit) {
-				stdErrorLinearPredictors <- stderr
+				ci.linpred <- cbind(
+						linpred$linpred  + stderr$linpred %o% c(-1, 1) * qtnorm,
+						linpred$baseline + stderr$baseline %o% c(-1, 1) * qtnorm
+				)
+				colnames(ci.linpred) <- unlist(lapply(dimnames(linpred)[[2]], paste, c("lwr", "upr"), sep = "_"))
 			}
 		}
 		
-		if (se.fit) {
-			# structure similar to predic.lm() 
-			pred <- list(fit=linearPredictors , se.fit=stdErrorLinearPredictors)
+		
+		
+		if (type=="risk"){
+			if(bhlink == "log"){
+				Predict <- pmax(exp(linpred ), .Machine$double.eps)
+				if (se.fit) {
+					stdErrorPredict <- stderr * Predict
+				}
+				if(ci.fit){
+					Predict <- cbind(Predict, pmax(exp(ci.linpred), .Machine$double.eps)) 
+					colnames(Predict) <- c("fit", "lwr", "upr")
+				}
+			} else {
+				Predict <- pmax(linpred[,2] * exp(linpred[,1] ), .Machine$double.eps)
+				if (do.se.fit) {
+					varerr <- attr(stderr, "varerr")
+					sdlog <- sqrt(varerr$baseline/linpred$baseline^2 + 2*varerr$coverr/linpred$baseline + varerr$linpred)
+				}
+				if (se.fit) {
+					stdErrorPredict <- Predict * exp(sdlog)
+				}
+				if(ci.fit){
+					Predict <- cbind(Predict, Predict * exp(sdlog %o% c(-1, 1) * qtnorm))
+					colnames(Predict) <- c("fit", "lwr", "upr")
+				}
+			}
 		} else {
-			pred <- linearPredictors
+			Predict <- linpred
+			if (se.fit) {
+				stdErrorPredict <- stderr
+			}
+			if(ci.fit){
+				Predict <- cbind(linpred, ci.linpred)
+				colnames(Predict) <- c("fit", "lwr", "upr")
+			}
+		}
+		
+		if(ci.fit){
+			attr(Predict, "level") <- level 
+		}
+		
+		# build results object
+		if (se.fit) {
+			pred <- list(fit=Predict, se.fit=stdErrorPredict)
+		} else {
+			pred <- Predict
 		}
 		
 	}

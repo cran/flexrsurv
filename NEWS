@@ -1,5 +1,9 @@
 NEWS about R package flexrsurv
       
+Version 2.0.18 - 2024-02-01
+      o confidence levels are computed in predict()
+      o bug fixes (getPseudoHazardFromTable) 
+      
 Version 2.0.17 - 2023-06-02
       o the package is now encoded in UTF-8 
       

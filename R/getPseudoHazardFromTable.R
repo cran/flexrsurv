@@ -60,7 +60,8 @@ getPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 	
 	class.startdate <- class(startdate)
 	# from now on, all dates are with class Date
-	startdate <- as.Date(as.numeric(ratetableDate(startdate)))
+#	startdate <- as.Date(as.numeric(ratetableDate(startdate)))
+	startdate <- ratetableDate(startdate)
 	
 	minage <- rep(agemin * scale, length(startage) )
 	mindate <- startdate - (startage - minage)
@@ -158,9 +159,9 @@ getPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL,
 		tmpdata <- cbind(tmpdata, matchdata2) 
 	}
 	
-	# cutpoints in the ratetable, with dates converted to class Date
+	# cutpoints in the ratetable, with dates converted to class ratetableDate
 	
-	cutdate <- as.Date(as.numeric(ratetableDate(attr(ratetable, "cutpoints")[[iyearrt]])))
+	cutdate <- ratetableDate(attr(ratetable, "cutpoints")[[iyearrt]])
 	cutage  <- c(attr(ratetable, "cutpoints")[[iagert]])
 	cutpoints <- list(cutage=cutage, cutdate=cutdate)
 	

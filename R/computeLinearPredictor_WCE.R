@@ -151,7 +151,7 @@
 	
 	
 	if(bhlink == "log"){
-		linpred <- linpred + YT0Gamma0
+		linpred <- as.vector(linpred + YT0Gamma0)
 	} else {
 		linpred <- cbind(linpred ,  YT0Gamma0)
 		dimnames(linpred)[[2]] <- c("linpred", "baseline")

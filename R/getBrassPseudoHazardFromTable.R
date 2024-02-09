@@ -63,7 +63,7 @@ getBrassPseudoHazardFromTable <- function(Y, startdate, startage, matchdata=NULL
 	class.startdate <- class(startdate)
 	# from now on, all dates are with class Date
 	startdate <- as.Date(as.numeric(ratetableDate(startdate)))
-	
+
 	minage <- rep(agemin * scale, length(startage) )
 	mindate <- startdate - (startage - minage)
 	
